@@ -13,7 +13,7 @@ metadata:
 
 **Regra 2 — dev externo é o opencode, com as skills `operar-dev-externo` e `operar-opencode` (TUI no herdr). O goose não entra neste projeto.** O opencode trabalha numa issue e leva o PR dos patches locais ao fork. **Sempre validar:** pré-checagem, CI, revisor e só então o merge.
 
-**Why:** ordem direta do usuário em 2026-11-23 ("o goose... nao recomendo... usar o opencode... sempre importante validar").
+**Why:** ordem direta do usuário em 2026-11-23 ("o goose... nao recomendo... usar o opencode... sempre importante validar"). Depois: "Quero q tente opencode como dev extern, poupe claude code token" — o opencode codifica todas as tarefas de dev, em teste.
 
 **How to apply:** nunca sugerir nem liberar tarefa para o goose, mesmo havendo a skill `operar-goose`. Só o usuário muda a linha `Dev externo:` do `docs/operacao.md`.
 

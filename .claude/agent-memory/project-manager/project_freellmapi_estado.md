@@ -19,10 +19,10 @@ metadata:
 1. Esperar o usuário avisar que o cliente aprovou o plano (registrar a aprovação em `docs/description.md`) e devolveu o formulário (salvar como `docs/respostas-cliente-r1-AAAA-MM-DD.pdf`).
 2. Publicar as tarefas com a skill `publicar-tarefas` (rótulos de área, milestones F0/M1/M2/M3, issue `[registro] Eventos do projeto`, rótulos do fluxo). Fechar #2 e #3 como duplicatas com o motivo; #4 vira M1.2; #1 é guarda-chuva de M3.
 3. Preparação inicial do fluxo: arquiteto faz a base (F0.2) e desenha F0.1 primeiro (o `main` vermelho trava tudo).
-4. Antes da primeira chamada a dev: o usuário decide quem implementa (opencode ou o dev do framework, que é descrito como Python; o projeto é TypeScript/Node).
+4. Dev: **o opencode codifica tudo, em teste** (usuário, 2026-11-23); devs do framework não são chamados. Regras em `docs/operacao.md`. Primeira tarefa a ir ao opencode: F0.1, depois do desenho do arquiteto e dos testes do QA.
 5. Proteção do `main` só no primeiro CI verde (F0.3).
 
-**Pendências com o usuário (chat):** stack do dev; se o `builder-senior` gera releases ou só vale o build do wrapper; PR por tarefa (padrão do fluxo) ou PR por módulo (a regra de granularidade do usuário); o wrapper `freellmapi-databoar-build` tem dois defeitos (F0.5).
+**Pendências com o usuário (chat):** se o `builder-senior` gera releases ou só vale o build do wrapper; PR por tarefa (padrão do fluxo) ou PR por módulo (a regra de granularidade do usuário); o wrapper `freellmapi-databoar-build` tem dois defeitos (F0.5).
 
 **Fatos conferidos:** `main` verde por último em `dd1efe7`; primeiro vermelho `c1c07bb` (migração `20261122_000001_nvidia_3.5_embedding_catalogue`), passo "Check migration round trip". PR #6 só tem tipos e entradas do painel para Grok/xAI, sem adaptador no servidor.
 

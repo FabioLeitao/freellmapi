@@ -6,7 +6,7 @@ Decidido por: padrão do framework; o usuário pediu o fluxo completo em 2026-11
 Paradas adiadas: nenhuma
 Proteção do main: pendente (o `main` está vermelho desde c1c07bb; aplicar no primeiro CI verde, tarefa F0.3)
 CI do GitHub: disponível (os jobs rodam; a falha atual é de teste, em "Check migration round trip")
-Dev externo: opencode, só nas tarefas que o usuário designar (skill `operar-opencode`, TUI num painel do herdr). O goose NÃO é usado neste projeto (ordem do usuário, 2026-11-23).
+Dev externo: opencode, em todas as tarefas de dev (backend e ux), **em teste** (decidido pelo usuário em 2026-11-23, para poupar tokens do Claude Code). Os devs do framework (`backend-dev-senior` e `frontend-dev-senior`) não são chamados. Skills `operar-opencode` e `operar-dev-externo` (TUI num painel do herdr). O goose NÃO é usado.
 Duelo: nenhum
 
 ## Repositório (ordem do usuário, 2026-11-23)
@@ -18,9 +18,15 @@ Duelo: nenhum
 
 ## Dev externo (opencode)
 
-- O opencode trabalha numa issue do fork, num branch e num worktree próprios, e leva ao fork o PR dos patches locais.
-- Segue a skill `operar-dev-externo` e a `operar-opencode`: TUI num painel do herdr, nunca `opencode run`.
-- **Todo PR do opencode é validado como o de qualquer dev:** pré-checagem, CI (GitHub, ou o local, se for o caso), revisor e só então o merge. Nada é mesclado só porque o dev externo disse que está pronto.
+- **Decisão (usuário, 2026-11-23):** o opencode codifica todas as tarefas de dev, como teste. Se o teste não render (a parada de duas rodadas de correção do dev externo, ou um defeito que só a conferência pega duas vezes), o PM leva ao usuário a decisão de voltar ao dev do framework. Arquiteto, QA e revisor continuam sendo agentes do Claude Code (o revisor precisa ser outro modelo que o dev).
+- **Forma da tarefa:** o opencode só recebe um **passo mecânico, depois do desenho e dos testes do QA mesclados**: 1 a 2 arquivos, método ou trecho nomeado, cerca de 20 linhas de diff, teste que já falha. Tarefa que descobre fatos (F0.1, a causa do round trip; M1.1, a reprodução do 429; M3.3; M3.4) é diagnosticada pelo arquiteto no desenho, que a quebra em passos mecânicos; o opencode no `auto` inventa fatos.
+- **Modelo:** o Auto do FreeLLMAPI primeiro (a config já traz `freellmapi/auto`); só se fixa um modelo depois de o Auto falhar na tarefa, e o evento registra o motivo e as tentativas.
+- **Como roda:** TUI num painel novo do herdr, nunca `opencode run`; branch da tarefa no clone limpo (sem worktree destacado); ref `backup/pre-<tarefa>` antes de começar; brief em inglês, inline, de cerca de 16 linhas; o contrato já vem da config do opencode. Segue as skills `operar-dev-externo` e `operar-opencode`.
+- **O que o opencode nunca faz:** commit, push, `gh`, rede, instalar pacote, ler chave ou `.env`. **Commit e PR são do PM.**
+- **Conferência determinística do PM em todo passo,** sem acreditar no "feito": arquivos tocados contra a lista, remoções fora do escopo (`git diff -U0 | grep '^-'` zero), `git reflog`, o teste vermelho antes do verde e a prova inteira rodada pelo PM, não só o teste novo.
+- **Cuidado próprio deste projeto:** o opencode usa o servidor local deste mesmo projeto (`127.0.0.1:3001`) como provedor. Nenhuma tarefa derruba, reinicia nem reconstrói esse servidor, e nenhum teste ou migração toca o banco real (`freeapi.db`): só banco de teste descartável.
+- **PR:** só depois do CI local verde no SHA exato (os passos do `ci.yml`: `npm ci`, lint, testes, build e o round trip das migrações) e do "vai" do usuário, que é regra dele. Sempre `--repo FabioLeitao/freellmapi --base main`, pronto (nunca draft).
+- **Validação antes do merge:** pré-checagem, CI e revisor, como em qualquer PR. O revisor roda no Claude Code, nunca na sessão do opencode.
 
 ## Build
 

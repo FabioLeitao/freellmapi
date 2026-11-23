@@ -162,4 +162,4 @@ Nenhuma.
 
 - A PR #6 mistura números do fork e do upstream (`#2020`, `#2062`, `#5`). O revisor confere o que cada `Closes` fecha.
 - Os commits `c1c07bb` e `a70c4e8` entraram direto no `main`. A partir daqui, todo código entra por PR revisado.
-- O projeto é TypeScript/Node e o `backend-dev-senior` do framework é descrito como Python com Docker. Antes da primeira chamada a dev, o usuário decide quem implementa (opencode ou o dev do framework).
+- **Quem codifica (decidido pelo usuário em 2026-11-23):** o opencode, em todas as tarefas de dev, em teste; os devs do framework não são chamados (`docs/operacao.md`). As tarefas que descobrem fatos (F0.1, M1.1, M3.3, M3.4) são diagnosticadas pelo arquiteto no desenho e entregues ao opencode em passos mecânicos.
