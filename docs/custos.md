@@ -9,7 +9,8 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 | 1 | 2026-11-23T22:47 | 1,67 | nenhum |
 | 2 | 2026-11-23T22:53 | 2,70 | nenhum |
 | 3 | 2026-11-23T23:41 | 1,84 | nenhum |
-| **Acumulado** | | **6,21** | |
+| 4 | 2026-11-23T23:53 | 1,03 | nenhum |
+| **Acumulado** | | **7,24** | |
 
 ## Rodada 1, desde 2026-11-23T22:47
 
@@ -34,3 +35,11 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 - **Por tarefa:** coordenação 1,84.
 - **Entregas:** dogfooding de F0.6 (verificação da mescla fork + upstream antes do sync): mescla sem conflito, 5 testes vermelhos todos da migração local, boot do artefato igual ao `:3001` vivo; causa de F0.1 confirmada. Nada empurrado ao `main` além da documentação.
 - **O que chamou a atenção:** o `:3001` roda uma imagem que não contém os commits locais do `main` do fork; o `01474fe1` dessa imagem não está em nenhum branch do clone.
+
+## Rodada 4, desde 2026-11-23T23:53
+
+- **Total:** US$ 1,03.
+- **Por agente:** project-manager 1,03.
+- **Por tarefa:** coordenação 1,03.
+- **Entregas:** complemento do dogfooding de F0.6 (cli, client, hooks, bootstrap e `check:i18n` passam); conferência do relato da sessão Owl; correção das minhas afirmações (a imagem do `:3001` não tem a migração NVIDIA, e o round trip falha por ids); trava de build do `main` do fork no `:3001`.
+- **O que chamou a atenção:** o `main` público do fork carrega gerência (custos, nomes de infraestrutura local); a decisão de onde ela mora é do usuário.

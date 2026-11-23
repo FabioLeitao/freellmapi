@@ -45,4 +45,5 @@ Vale para todos os repos. Aqui ele se aplica assim, **de forma provisória** (a 
 
 - Todo build do projeto que carrega os nossos patches usa o wrapper `freellmapi-databoar-build` (`~/.local/bin`), que marca a versão como `<tag do upstream>-<commits>-g<sha>`, no mesmo padrão do `zero-databoar-build`. Sem o wrapper, o build não vale como versão.
 - Limites conhecidos do wrapper, a corrigir antes de confiar na marca (tarefa F0.5): o `FREEAPI_VERSION` só é lido pelo servidor em tempo de execução e o wrapper só o exporta durante o build; e ele compila o checkout atual, não o `--ref` que recebe.
+- **Nenhum build do `main` do fork é implantado no `:3001` antes de F0.1:** a imagem atual tem 52 migrações e o `main` tem a migração NVIDIA, que será refeita. O `:3001` é um contêiner podman; só o usuário o troca.
 - Releases com imagens Docker e pacote (`builder-senior`) **não** são geradas por padrão neste projeto, até o usuário pedir (pergunta ao usuário, no relato da rodada 1).
