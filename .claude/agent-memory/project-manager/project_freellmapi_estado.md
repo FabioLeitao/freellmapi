@@ -27,3 +27,5 @@ metadata:
 **Fatos conferidos:** `main` verde por último em `dd1efe7`; primeiro vermelho `c1c07bb` (migração `20261122_000001_nvidia_3.5_embedding_catalogue`), passo "Check migration round trip". PR #6 só tem tipos e entradas do painel para Grok/xAI, sem adaptador no servidor.
 
 **Issue de registro:** #7 (`[registro] Eventos do projeto`). Rótulos do fluxo criados. Limpeza do ambiente rodada no fim da rodada 1. Cliente decide pelo formulário; sem trabalho liberado até a aprovação.
+
+**Ritual de fechamento (projectAgents#104, fixado pelo usuário em 2026-11-23):** três revisões (revisor, cyber/KP, adversarial pelo Hermes), check-all equivalente local (este repo não tem `scripts/check-all.sh`), `Pré-voo: modo=desligado (sem builder)` e merge só por `merge-green FabioLeitao/freellmapi#<n>` (o PM não roda `gh pr merge`). Aplicação provisória; pedir builder ou criar check-all é decisão do usuário.

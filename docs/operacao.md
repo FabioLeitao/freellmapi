@@ -8,6 +8,7 @@ Proteção do main: pendente (o `main` está vermelho desde c1c07bb; aplicar no 
 CI do GitHub: disponível (os jobs rodam; a falha atual é de teste, em "Check migration round trip")
 Dev externo: opencode, em todas as tarefas de dev (backend e ux), **em teste** (decidido pelo usuário em 2026-11-23, para poupar tokens do Claude Code). Os devs do framework (`backend-dev-senior` e `frontend-dev-senior`) não são chamados. Skills `operar-opencode` e `operar-dev-externo` (TUI num painel do herdr). O goose NÃO é usado.
 Duelo: nenhum
+Pré-voo: modo=desligado (sem builder)
 
 ## Repositório (ordem do usuário, 2026-11-23)
 
@@ -27,6 +28,16 @@ Duelo: nenhum
 - **Cuidado próprio deste projeto:** o opencode usa o servidor local deste mesmo projeto (`127.0.0.1:3001`) como provedor. Nenhuma tarefa derruba, reinicia nem reconstrói esse servidor, e nenhum teste ou migração toca o banco real (`freeapi.db`): só banco de teste descartável.
 - **PR:** só depois do CI local verde no SHA exato (os passos do `ci.yml`: `npm ci`, lint, testes, build e o round trip das migrações) e do "vai" do usuário, que é regra dele. Sempre `--repo FabioLeitao/freellmapi --base main`, pronto (nunca draft).
 - **Validação antes do merge:** pré-checagem, CI e revisor, como em qualquer PR. O revisor roda no Claude Code, nunca na sessão do opencode.
+
+## Ritual de fechamento de épico (fixado pelo usuário em 2026-11-23, FabioLeitao/projectAgents#104)
+
+Vale para todos os repos. Aqui ele se aplica assim, **de forma provisória** (a própria #104 diz que o desenho para repo sem `check-all` ainda não existe):
+
+1. **Uma épica por vez:** nenhuma épica nova enquanto a anterior tem bloqueante aberto. A PR #6 é a primeira a passar pelo ritual.
+2. **Três revisões antes do merge:** `revisor-senior` (texto fixo), `cyber-senior` (texto fixo, pelo KP; se o KP ou o cyber falharem, corrige-se o KP ou o cyber, nunca se pula) e o adversarial pelo Hermes (`hermes-review-pr <PR> --scope ...`, TUI no herdr, só leitura).
+3. **Antes de qualquer push para o CI do GitHub:** este repo **não tem** `scripts/check-all.sh`. Até o usuário decidir criar um, vale o equivalente local: os passos do `ci.yml` no SHA exato (`npm ci`, lint, testes, build e o round trip das migrações). O pré-voo no Buildbot está **desligado: o repo não tem builder** (linha `Pré-voo:` acima). Pedir um builder é decisão do usuário.
+4. **CI do GitHub verde.** O espelho do GitLab não existe neste fork: não se aplica.
+5. **Merge só pelo `merge-green FabioLeitao/freellmapi#<n>`,** que pergunta ao usuário (HITL) e só mescla se o PR continua limpo e com o mesmo head. O PM **não** roda `gh pr merge` neste repo. O resto do modo autônomo continua valendo.
 
 ## Build
 
