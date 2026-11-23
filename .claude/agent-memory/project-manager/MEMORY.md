@@ -1,0 +1,2 @@
+- [Estado do FreeLLMAPI](project_freellmapi_estado.md) — rodada 1: plano pronto para aprovação, perguntas P1 a P7, próximos passos
+- [Fork, opencode e build](feedback_fork_opencode_build.md) — repo é o fork; dev externo opencode (nunca goose); build pelo wrapper databoar
