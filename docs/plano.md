@@ -144,7 +144,9 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 
 ### Respondidas
 
-Nenhuma.
+| ID | Pergunta | Resposta | Data | Itens revisados |
+|---|---|---|---|---|
+| P4 | Os patches ficam só no fork, ou parte deles também vai ao upstream? | **Os patches seguem ao upstream** (`tashfeenahmed/freellmapi`, MIT), seguindo o `CONTRIBUTING.md` de lá; o fork é a base de trabalho. Resposta do cliente **pelo usuário, no chat**, depois de a sessão Owl recomendar. | 2026-11-23 | revisão no commit seguinte: R14, R15, F0.1, F0.4, M1, M2.1, M2.2, T0.4 e os novos F0.6 a F0.8, M4, R19 a R22 |
 
 ### Em aberto
 
@@ -153,7 +155,6 @@ Nenhuma.
 | P1 *(prioritária)* | Histórico com imagem e sem modelo de visão: devolver erro 422 claro, ou descartar as imagens do histórico e seguir? | 422 `no_vision_model`, como pedem as issues. | R1, M1.1, M1.2, T1.1 a T1.7 |
 | P2 *(prioritária)* | Os limites gratuitos de Grok e xAI vêm de fonte oficial? Serviço que exige crédito ou cartão pode entrar (o `CONTRIBUTING.md` proíbe)? | Só entra com plano gratuito comprovado nos termos oficiais; sem prova, fica marcado "não verificado" e fora do `auto`. | R5, M2.2, T2.3 a T2.5 |
 | P3 | O Cursor é uma IDE, sem API compatível com OpenAI encontrada (como o Kiro da issue #1). Sai do escopo? | Sai, até haver evidência de uma API. | R6, M2.3, T2.6 |
-| P4 *(prioritária)* | Os patches ficam só no fork, ou parte deles também vai ao upstream? | Só no fork; nada vai ao upstream. | R15, F0.4 e a forma de todo PR |
 | P5 | Os 6 critérios de admissão da issue #1 estão aprovados? Provedor que treina com os dados pode atender conteúdo sensível? | Aprovados como estão; provedor que treina com dados só atende conteúdo público. | R8, R11, M3.1, M3.4, M3.5, T3.2, T3.6 |
 | P6 | Preencher `served_model` com o modelo que o provedor informar? | Sim; sem informação do provedor, fica vazio e o provedor é marcado como "opaco". | R9, M3.3, T3.3 |
 | P7 | A medição comparativa pode gastar a cota gratuita dos provedores? Quanto? | Até 200 requisições por modelo, só em planos gratuitos. | R10, M3.4, T3.4 |

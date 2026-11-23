@@ -33,3 +33,4 @@ Não houve um briefing do cliente. Esta descrição foi **levantada pelo gerente
 ## Histórico
 
 - 2026-11-23: descrição levantada pelo gerente de projetos; usuário (Fabio) pediu a estrutura de gerência e o fluxo completo; ordens sobre fork, opencode e wrapper de build registradas em `docs/operacao.md`.
+- 2026-11-23: **P4 respondida pelo usuário, no chat:** os patches seguem ao upstream (`tashfeenahmed/freellmapi`, MIT), seguindo o `CONTRIBUTING.md` de lá. Isso substitui a ordem anterior de que nada iria ao upstream. A revisão do plano e das regras vem no commit seguinte.
