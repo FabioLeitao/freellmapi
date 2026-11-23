@@ -18,6 +18,8 @@ Não houve um briefing do cliente. Esta descrição foi **levantada pelo gerente
 2. **Painel de chaves.** Botão para copiar a URL da requisição da API (pedido que veio do upstream, #2020), e Grok e xAI na lista de provedores (issue #5, já fechada). O Cursor como provedor ficou prometido como "próxima PR".
 3. **Avaliar free tiers e critérios de admissão para o `auto` (issue #1).** Ler os termos oficiais de Kilo, Modal, xKiro, Z.ai e Moonshot; decidir se a coluna `served_model` passa a ser preenchida (hoje está vazia em todas as linhas); medir qualidade por tarefa antes de mudar qualquer prioridade; e, se o Kilo passar, criar um adaptador desligado por padrão.
 
+4. **Devolver os patches ao upstream (decisão de 2026-11-23, P4):** o fork existe para produzir patches que voltem ao `tashfeenahmed/freellmapi` (MIT), seguindo o `CONTRIBUTING.md` de lá: um teste, `npm test` verde, uma mudança por PR, nada pago, migração só em arquivo novo e `npm run check:i18n`. O autor responde pelo diff; nenhum limite ou id de modelo pode ser inventado.
+
 ## Entrega anterior ao fluxo
 
 - A **PR #6** ("EPiC: Multiple issue fixes", branch `feature/epic-fixes-final`, 3 commits) reúne: botão de copiar a URL, Grok e xAI na lista de plataformas (só tipos e entradas do painel, sem adaptador no servidor) e um log estruturado no `proxy.ts`. Fecha #3, #4 e #5. Está com CI vermelho, sem teste novo e com limites de provedor que não foram conferidos nos termos oficiais.
@@ -26,8 +28,8 @@ Não houve um briefing do cliente. Esta descrição foi **levantada pelo gerente
 ## Regras do projeto
 
 - `CONTRIBUTING.md`: todo PR inclui teste e mantém a suíte verde; escopo de uma mudança só; **nenhum serviço pago ou que peça cartão** entra no catálogo; mudança de esquema só em arquivo de migração novo (nunca se edita uma migração aplicada); `.gitattributes` mantém LF (o hash CSP do `client/index.html` depende disso).
-- Fork público: nada de chave, custo ou informação de outros projetos em issue, commit ou documento.
-- O dev externo é o **opencode**, nunca o goose (o goose confundiu o fork com o upstream mais de uma vez). O destino de todo PR é o fork.
+- Fork público e upstream público: nada de chave, custo ou informação de outros projetos em issue, commit, documento ou PR. O branch de patch não leva arquivos de gerência.
+- O dev externo é o **opencode**, nunca o goose (o goose confundiu o fork com o upstream mais de uma vez). **Os patches seguem ao upstream** (P4); PRs de revisão e a documentação ficam no fork. Nenhum agente abre PR no upstream sem o "vai" do usuário (`docs/operacao.md`).
 - Builds com os nossos patches passam pelo wrapper `freellmapi-databoar-build`.
 
 ## Histórico

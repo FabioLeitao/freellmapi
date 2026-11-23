@@ -5,11 +5,11 @@ metadata:
   type: feedback
 ---
 
-**Regra 1 — o repositório é o fork `FabioLeitao/freellmapi`, nunca o upstream `tashfeenahmed/freellmapi`.** Todo `gh` de escrita leva `--repo FabioLeitao/freellmapi`; todo PR leva `--base main`; push só para `origin`. O `gh repo set-default` da pasta já foi fixado no fork (2026-11-23).
+**Regra 1 — a base é o fork `FabioLeitao/freellmapi`; o destino dos patches é o upstream `tashfeenahmed/freellmapi`, só por PR aberto pelo PM com o "vai" do usuário.** Todo `gh` de escrita leva `--repo` explícito (fork por padrão; upstream só para abrir PR de patch). Branch de patch nasce de `upstream/main`, uma mudança por PR, sem arquivos de gerência. Push só para `origin`. O `gh repo set-default` da pasta está no fork.
 
-**Why:** o usuário disse que o goose "já confundiu isso diversas vezes" (abriu coisas no upstream). Num fork, o `gh pr create` pode escolher o upstream como destino.
+**Why:** primeiro o usuário ordenou "nada vai ao upstream" (o goose confundira o fork com o upstream); em 2026-11-23 ele reverteu, pelo chat: "Sim, como owl recomendou. Seguindo solicitação do upstream" (P4). O motivo do upstream é o `CONTRIBUTING.md` de lá (teste, `npm test`, uma mudança por PR, nada pago, migração em arquivo novo, `check:i18n`, nenhum limite inventado).
 
-**How to apply:** conferir o destino antes de todo `gh pr create`/`gh issue create`; repetir a regra na nota de passagem a qualquer dev externo.
+**How to apply:** conferir o destino antes de todo `gh pr create`/`gh issue create`; nenhum agente abre nada no upstream sem o "vai"; repetir a regra na nota de passagem a qualquer dev externo.
 
 **Regra 2 — dev externo é o opencode, com as skills `operar-dev-externo` e `operar-opencode` (TUI no herdr). O goose não entra neste projeto.** O opencode trabalha numa issue e leva o PR dos patches locais ao fork. **Sempre validar:** pré-checagem, CI, revisor e só então o merge.
 

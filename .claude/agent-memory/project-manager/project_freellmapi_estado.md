@@ -13,9 +13,11 @@ metadata:
 
 **Arquivos enviados ao cliente:**
 - `docs/visao-projeto-2026-11-23.pdf` ("Plano do projeto para aprovação").
-- `docs/perguntas-cliente-r1-2026-11-23.pdf`, rodada 1, perguntas P1 a P7 (P1 422 vs descartar imagens; P2 Grok/xAI gratuitos; P3 Cursor; P4 só fork; P5 critérios de admissão; P6 `served_model`; P7 orçamento da medição).
+- `docs/perguntas-cliente-r2-2026-11-23.pdf`, rodada 2 (substitui a r1, enviada antes de P4 ser respondida): perguntas P1, P2, P3, P5, P6, P7 e P8 (P8: todo patch vai ao upstream ou parte fica só no fork).
+- `docs/perguntas-cliente-r1-2026-11-23.pdf`, rodada 1 (superada pela r2), perguntas P1 a P7 (P1 422 vs descartar imagens; P2 Grok/xAI gratuitos; P3 Cursor; P4 só fork; P5 critérios de admissão; P6 `served_model`; P7 orçamento da medição).
 
 **Próximos passos (na ordem):**
+0. **P4 respondida pelo usuário no chat em 2026-11-23: os patches seguem ao upstream.** Plano revisado: F0.4 riscada; novos F0.6 (sincronizar o fork com o upstream, vem primeiro), F0.7 (ADR do fluxo de patch), F0.8 (substituir a PR #6), módulo M4 (reasoning models e embeddings NVIDIA, extraídos do `c1c07bb`), R19 a R22. Em seguida a F0.6: F0.1, que provavelmente é a migração local, não a defasagem.
 1. Esperar o usuário avisar que o cliente aprovou o plano (registrar a aprovação em `docs/description.md`) e devolveu o formulário (salvar como `docs/respostas-cliente-r1-AAAA-MM-DD.pdf`).
 2. Publicar as tarefas com a skill `publicar-tarefas` (rótulos de área, milestones F0/M1/M2/M3, issue `[registro] Eventos do projeto`, rótulos do fluxo). Fechar #2 e #3 como duplicatas com o motivo; #4 vira M1.2; #1 é guarda-chuva de M3.
 3. Preparação inicial do fluxo: arquiteto faz a base (F0.2) e desenha F0.1 primeiro (o `main` vermelho trava tudo).

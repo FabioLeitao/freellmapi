@@ -10,12 +10,14 @@ Dev externo: opencode, em todas as tarefas de dev (backend e ux), **em teste** (
 Duelo: nenhum
 Pré-voo: modo=desligado (sem builder)
 
-## Repositório (ordem do usuário, 2026-11-23)
+## Repositório e destino dos patches (ordens do usuário, 2026-11-23)
 
-- O repositório do projeto é o **fork** `FabioLeitao/freellmapi`. O `upstream` (`tashfeenahmed/freellmapi`) só serve para trazer mudanças para o fork; **nada deste projeto vai para ele**.
-- O `gh` desta pasta já tem o fork como padrão (`gh repo set-default FabioLeitao/freellmapi`). Mesmo assim, todo comando de escrita leva `--repo FabioLeitao/freellmapi`, e todo PR leva `--base main`. Num fork, o `gh pr create` pode escolher o upstream como destino: nunca confie no padrão.
-- Todo PR é aberto pronto (nunca draft) e confere, antes de abrir, que o destino é o fork.
-- Push só para `origin`. Nunca `git push upstream`.
+- A base de trabalho é o fork `FabioLeitao/freellmapi`. **O destino dos patches é o upstream** `tashfeenahmed/freellmapi` (MIT), seguindo o `CONTRIBUTING.md` de lá (decisão do usuário, no chat, em 2026-11-23; ela substitui a ordem anterior de que nada iria ao upstream).
+- O `gh` desta pasta tem o fork como padrão. Todo comando de escrita leva `--repo` explícito: `FabioLeitao/freellmapi` para issues, PRs de revisão e documentação; `tashfeenahmed/freellmapi` **só** para abrir um PR de patch, e **só com o "vai" do usuário para aquele PR**. Nenhum agente (o opencode inclusive) abre PR, issue ou comentário no upstream.
+- **O branch de patch nasce de `upstream/main`** (depois de sincronizar o fork, tarefa F0.6), nunca do `main` do fork. Ele não leva `docs/operacao.md`, `docs/plano.md`, `docs/custos.md`, PDFs nem `.claude/agent-memory/`.
+- **Regras do upstream em todo PR:** um teste e o `npm test` verde; `.editorconfig` e tsconfig; **uma mudança por PR**; nada de serviço pago ou que peça cartão; migração só como arquivo novo em `server/src/db/migrations/`, sem editar migração já aplicada; no `client/`, `npm run check:i18n`. Ajuda de IA é aceita, mas o autor responde pelo diff: nada reformatado fora da mudança, nenhum limite, id de modelo ou endpoint inventado (tudo conferido no provedor) e testes que exercitam a mudança de verdade. Não é preciso declarar a ajuda de IA.
+- **Fluxo de um patch** (provisório; o arquiteto o fixa em F0.7): (1) branch de `upstream/main`; (2) gate local no SHA exato (`npm ci`, `npm test`, `npm run build`, `npm run check:i18n`, round trip das migrações); (3) PR de revisão no fork, contra o `main` do fork, que **não é mesclado**: nele rodam o revisor, o cyber (KP) e o adversarial (Hermes); (4) com as revisões e o CI verdes e o "vai" do usuário, o PM abre o PR no upstream com o mesmo branch; (5) o merge no upstream é do mantenedor, então o `merge-green` não se aplica a ele; o PR de revisão no fork é fechado, e o fork recebe o patch na próxima sincronização. O que só interessa ao fork, ou o que o upstream recusar, vai por PR no fork, com `merge-green`.
+- Push só para `origin`. Nunca `git push upstream`. PR sempre pronto (nunca draft).
 
 ## Dev externo (opencode)
 
@@ -26,7 +28,7 @@ Pré-voo: modo=desligado (sem builder)
 - **O que o opencode nunca faz:** commit, push, `gh`, rede, instalar pacote, ler chave ou `.env`. **Commit e PR são do PM.**
 - **Conferência determinística do PM em todo passo,** sem acreditar no "feito": arquivos tocados contra a lista, remoções fora do escopo (`git diff -U0 | grep '^-'` zero), `git reflog`, o teste vermelho antes do verde e a prova inteira rodada pelo PM, não só o teste novo.
 - **Cuidado próprio deste projeto:** o opencode usa o servidor local deste mesmo projeto (`127.0.0.1:3001`) como provedor. Nenhuma tarefa derruba, reinicia nem reconstrói esse servidor, e nenhum teste ou migração toca o banco real (`freeapi.db`): só banco de teste descartável.
-- **PR:** só depois do CI local verde no SHA exato (os passos do `ci.yml`: `npm ci`, lint, testes, build e o round trip das migrações) e do "vai" do usuário, que é regra dele. Sempre `--repo FabioLeitao/freellmapi --base main`, pronto (nunca draft).
+- **PR:** o opencode nunca abre PR; o PM abre, pelo fluxo de patch acima, só depois do gate local verde no SHA exato e do "vai" do usuário, que é regra dele.
 - **Validação antes do merge:** pré-checagem, CI e revisor, como em qualquer PR. O revisor roda no Claude Code, nunca na sessão do opencode.
 
 ## Ritual de fechamento de épico (fixado pelo usuário em 2026-11-23, FabioLeitao/projectAgents#104)
@@ -37,7 +39,7 @@ Vale para todos os repos. Aqui ele se aplica assim, **de forma provisória** (a 
 2. **Três revisões antes do merge:** `revisor-senior` (texto fixo), `cyber-senior` (texto fixo, pelo KP; se o KP ou o cyber falharem, corrige-se o KP ou o cyber, nunca se pula) e o adversarial pelo Hermes (`hermes-review-pr <PR> --scope ...`, TUI no herdr, só leitura).
 3. **Antes de qualquer push para o CI do GitHub:** este repo **não tem** `scripts/check-all.sh`. Até o usuário decidir criar um, vale o equivalente local: os passos do `ci.yml` no SHA exato (`npm ci`, lint, testes, build e o round trip das migrações). O pré-voo no Buildbot está **desligado: o repo não tem builder** (linha `Pré-voo:` acima). Pedir um builder é decisão do usuário.
 4. **CI do GitHub verde.** O espelho do GitLab não existe neste fork: não se aplica.
-5. **Merge só pelo `merge-green FabioLeitao/freellmapi#<n>`,** que pergunta ao usuário (HITL) e só mescla se o PR continua limpo e com o mesmo head. O PM **não** roda `gh pr merge` neste repo. O resto do modo autônomo continua valendo.
+5. **Merge só pelo `merge-green FabioLeitao/freellmapi#<n>`** (vale para PR no fork; PR no upstream é mesclado pelo mantenedor), que pergunta ao usuário (HITL) e só mescla se o PR continua limpo e com o mesmo head. O PM **não** roda `gh pr merge` neste repo. O resto do modo autônomo continua valendo.
 
 ## Build
 
