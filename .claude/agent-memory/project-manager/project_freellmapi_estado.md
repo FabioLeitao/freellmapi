@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-**Estado (2026-11-23, rodada 1, início 2026-11-23T22:47Z):** estrutura de gerência criada no `main` (`docs/operacao.md`, `docs/description.md`, `docs/plano.md`). Plano pronto para aprovação do cliente; **nenhuma issue de tarefa publicada**; nenhum agente chamado.
+**Rodada 1 encerrada (início 2026-11-23T22:47Z; custo US$ 1,67 em `docs/custos.md`; evento `custo` na issue #7).** **Estado (2026-11-23):** estrutura de gerência criada no `main` (`docs/operacao.md`, `docs/description.md`, `docs/plano.md`). Plano pronto para aprovação do cliente; **nenhuma issue de tarefa publicada**; nenhum agente chamado.
 
 **Cliente:** Fabio (product owner e usuário do time). A descrição foi levantada pelo PM a partir das issues #1 a #4, da PR #6 e dos commits locais; não houve briefing.
 
@@ -25,3 +25,5 @@ metadata:
 **Pendências com o usuário (chat):** stack do dev; se o `builder-senior` gera releases ou só vale o build do wrapper; PR por tarefa (padrão do fluxo) ou PR por módulo (a regra de granularidade do usuário); o wrapper `freellmapi-databoar-build` tem dois defeitos (F0.5).
 
 **Fatos conferidos:** `main` verde por último em `dd1efe7`; primeiro vermelho `c1c07bb` (migração `20261122_000001_nvidia_3.5_embedding_catalogue`), passo "Check migration round trip". PR #6 só tem tipos e entradas do painel para Grok/xAI, sem adaptador no servidor.
+
+**Issue de registro:** #7 (`[registro] Eventos do projeto`). Rótulos do fluxo criados. Limpeza do ambiente rodada no fim da rodada 1. Cliente decide pelo formulário; sem trabalho liberado até a aprovação.
