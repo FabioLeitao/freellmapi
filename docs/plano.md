@@ -12,7 +12,7 @@ O projeto já existe e funciona. O plano cobre só o **backlog do fork**: o que 
 4. **M3, Avaliação e admissão de provedores gratuitos:** termos oficiais, critérios de admissão, `served_model` e medição comparativa antes de mexer no `auto`; o Kilo só entra se passar, desligado por padrão.
 5. **M4, Patches locais para o upstream:** o que já está só no fork (`c1c07bb` mistura reasoning models, headers de RCA do 429 e embeddings NVIDIA) é separado em mudanças únicas, cada uma com teste, para o upstream.
 
-Ordem: **F0.6 (sincronizar o fork com o upstream) vem primeiro**, depois F0.1 (o `main` vermelho trava tudo). M1, M2 e M4 andam em paralelo depois deles. M3 começa pela leitura dos termos (F0 não a bloqueia) e só chega ao código depois das respostas do cliente.
+Ordem: **F0.1 e F0.6 são independentes** (o dogfooding de 2026-11-23 mostrou que o vermelho vem da migração local, e não da defasagem). F0.1 destrava o CI dos PRs de revisão no fork; F0.6 destrava os branches de patch. M1, M2 e M4 andam em paralelo depois deles. M3 começa pela leitura dos termos (F0 não a bloqueia) e só chega ao código depois das respostas do cliente.
 
 **Destino (P4, respondida em 2026-11-23):** os patches seguem ao upstream, seguindo o `CONTRIBUTING.md` de lá. Branch de patch nasce de `upstream/main`, uma mudança por PR, sem arquivos de gerência. O fork é a base de trabalho e de revisão (`docs/operacao.md`).
 
@@ -27,6 +27,8 @@ Ordem: **F0.6 (sincronizar o fork com o upstream) vem primeiro**, depois F0.1 (o
 - Issues: #2 e #3 são duplicatas ("History with images → 429"); #4 pede o log; #5 está fechada; #1 é de avaliação. Nenhuma tem ID `[x.y]`, rótulo de área nem milestone.
 - Fork contra upstream: o `main` do fork está **11 commits atrás e 9 à frente** do `upstream/main`. O CI do `upstream/main` está verde; o upstream não mexeu em `server/src/db/migrations` nem em `db/migrate` desde o ponto comum (`8fcdb90e`). A causa provável do vermelho é, portanto, a migração local de `c1c07bb`, e não a defasagem. O arquiteto confirma em F0.1.
 - `c1c07bb` mistura três mudanças (reasoning models em `openai-compat.ts`, headers de RCA do 429 em `proxy.ts` e a migração de embeddings NVIDIA com `defaults.ts`); o upstream exige uma mudança por PR.
+- **Dogfooding de F0.6 (2026-11-23, Node 24.22.2, árvore `origin/main` + `upstream/main`, sem conflito, não enviada ao `main`):** `npm ci`, lint e build verdes; `npm test` com 5 falhas em 5.713, todas da migração local (ver F0.1); o artefato sobe em 2 s e responde igual ao `:3001` vivo em 7 GETs sem autenticação; as 53 migrações se aplicam num banco novo; a lista de migrações da mescla é idêntica à do fork, então o sync não muda o esquema do banco real. **Não verificado:** roteamento com chaves reais (só o usuário autoriza) e o `main` do fork sozinho (a atribuição vem das mensagens de erro e do CI do fork, que já falhava no round trip).
+- O `:3001` real é um contêiner podman com a imagem `freellmapi:up-8fcdb90e.databoar-01474fe1.zeroclassifier`: o ponto de separação com o upstream mais o commit `01474fe1` ("merge: absorb upstream 8fcdb90e into databoar fork"), que não está em nenhum branch do clone. Essa imagem não tem `c1c07bb` nem `a70c4e8`: o `main` do fork nunca rodou em produção local. Sincronizar no GitHub não troca o contêiner; isso exige build e reinício.
 
 ## Requisitos
 
@@ -70,7 +72,7 @@ Não funcionais
 
 | ID | Tarefa | Área | Atende | Depende de |
 |---|---|---|---|---|
-| F0.1 | Corrigir o "Check migration round trip" vermelho no `main`. Suspeita: a migração `20261122_000001_nvidia_3.5_embedding_catalogue` (confirmar a causa antes de mexer). | backend | R12, R13 | F0.6 |
+| F0.1 | Corrigir o "Check migration round trip" vermelho no `main`. **Causa confirmada em 2026-11-23** (5 testes vermelhos em 5.713, todos da migração `20261122_000001_nvidia_3.5_embedding_catalogue` de `c1c07bb`): (1) ponto no nome do arquivo (`3.5`), e o teste de backup exige `[a-z0-9_]+`; (2) registro em `defaults.ts` fora da ordem dos nomes, antes da `20261111_000002_profile_routing_strategy`; (3) `up()` passa ao `node:sqlite` um parâmetro que ele rejeita (`Unknown named parameter '0'`); (4) up, down, up não volta ao mesmo esquema. Corrigir é refazer a migração (ou reverter o `c1c07bb`); o arquiteto decide no desenho. | backend | R12, R13 | — |
 | F0.2 | Base da arquitetura do monorepo existente (`shared`, `server`, `client`, `cli`, `desktop`): stack, migrações, i18n, hash CSP, como um `Platform` vira adaptador. Skill `base-arquitetura`. | gestão (arquiteto) | R14 | — |
 | F0.3 | Proteger o `main` (checks obrigatórios, sem force-push). | gestão | R12 | F0.1 |
 | ~~F0.4~~ | ~~Regularizar a PR #6 pelo fluxo.~~ **Riscada em 2026-11-23:** a PR #6 não segue como está (mistura três mudanças, 60 arquivos de locale, sem teste; o upstream exige uma mudança por PR). Substituída por F0.8. | ~~gestão~~ | ~~R12, R14~~ | — |

@@ -8,7 +8,8 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 |---|---|---|---|
 | 1 | 2026-11-23T22:47 | 1,67 | nenhum |
 | 2 | 2026-11-23T22:53 | 2,70 | nenhum |
-| **Acumulado** | | **4,37** | |
+| 3 | 2026-11-23T23:41 | 1,84 | nenhum |
+| **Acumulado** | | **6,21** | |
 
 ## Rodada 1, desde 2026-11-23T22:47
 
@@ -25,3 +26,11 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 - **Por tarefa:** coordenação 2,70.
 - **Entregas:** opencode como dev externo; ritual de fechamento de épico (projectAgents#104); P4 respondida (patches seguem ao upstream) com revisão do plano, das regras e dos PDFs (formulário r2 substitui o r1). Nenhuma tarefa publicada nem mesclada.
 - **O que chamou a atenção:** o `main` vermelho parece vir da migração local de `c1c07bb`, e não da defasagem do upstream (a confirmar em F0.1); a rodada ficou toda no project-manager, sem agente de execução.
+
+## Rodada 3, desde 2026-11-23T23:41
+
+- **Total:** US$ 1,84.
+- **Por agente:** project-manager 1,84.
+- **Por tarefa:** coordenação 1,84.
+- **Entregas:** dogfooding de F0.6 (verificação da mescla fork + upstream antes do sync): mescla sem conflito, 5 testes vermelhos todos da migração local, boot do artefato igual ao `:3001` vivo; causa de F0.1 confirmada. Nada empurrado ao `main` além da documentação.
+- **O que chamou a atenção:** o `:3001` roda uma imagem que não contém os commits locais do `main` do fork; o `01474fe1` dessa imagem não está em nenhum branch do clone.

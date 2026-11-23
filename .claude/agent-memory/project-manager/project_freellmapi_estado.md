@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-**Rodadas 1 e 2 encerradas (custo US$ 1,67 e US$ 2,70 em `docs/custos.md`; eventos `custo` na issue #7); a próxima rodada começa na hora do último evento `custo`.** **Estado (2026-11-23):** estrutura de gerência criada no `main` (`docs/operacao.md`, `docs/description.md`, `docs/plano.md`). Plano pronto para aprovação do cliente; **nenhuma issue de tarefa publicada**; nenhum agente chamado.
+**Rodadas 1 a 3 encerradas (custo US$ 1,67 e US$ 2,70 em `docs/custos.md`; eventos `custo` na issue #7); a próxima rodada começa na hora do último evento `custo`.** **Estado (2026-11-23):** estrutura de gerência criada no `main` (`docs/operacao.md`, `docs/description.md`, `docs/plano.md`). Plano pronto para aprovação do cliente; **nenhuma issue de tarefa publicada**; nenhum agente chamado.
 
 **Cliente:** Fabio (product owner e usuário do time). A descrição foi levantada pelo PM a partir das issues #1 a #4, da PR #6 e dos commits locais; não houve briefing.
 
@@ -31,3 +31,5 @@ metadata:
 **Issue de registro:** #7 (`[registro] Eventos do projeto`). Rótulos do fluxo criados. Limpeza do ambiente rodada no fim da rodada 1. Cliente decide pelo formulário; sem trabalho liberado até a aprovação.
 
 **Ritual de fechamento (projectAgents#104, fixado pelo usuário em 2026-11-23):** três revisões (revisor, cyber/KP, adversarial pelo Hermes), check-all equivalente local (este repo não tem `scripts/check-all.sh`), `Pré-voo: modo=desligado (sem builder)` e merge só por `merge-green FabioLeitao/freellmapi#<n>` (o PM não roda `gh pr merge`). Aplicação provisória; pedir builder ou criar check-all é decisão do usuário.
+
+**Dogfooding de F0.6 (rodada 3, 2026-11-23):** mescla fork + upstream limpa e não muda o esquema; boot do artefato igual ao `:3001`; a causa do `main` vermelho (F0.1) é a migração local de `c1c07bb` (nome com ponto, ordem no registro, parâmetro do `node:sqlite`, round trip). F0.1 e F0.6 são independentes. **O sync não foi empurrado ao `main`: espera a decisão do usuário** (PR de sync pelo `merge-green`, ou F0.1 antes). O `:3001` real é um contêiner podman com imagem que não inclui os commits locais.
