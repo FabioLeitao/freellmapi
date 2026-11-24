@@ -24,3 +24,9 @@ metadata:
 **Why:** o usuário quer a versão marcada com os patches locais, como já faz no harness zero.
 
 **How to apply:** o `builder-senior` e qualquer build usam o wrapper; não alterar o wrapper (é do usuário), descrever o defeito a ele.
+
+**Regra 4 — disco e temporários (operador, 2026-11-24, em maiúsculas, mais de uma vez):** NUNCA worktree (nem `-w` de harness) para nenhum agente; NUNCA cópia ou clone do repositório em `/tmp` (RAM), `~/.cache` ou outra pasta; todo trabalho num BRANCH do clone canônico (`git switch -c`; trocar o branch do clone com a árvore limpa e voltar); temporário só pequeno, em `mktemp`, com `trap`; **antes de apagar qualquer coisa, guardar o trabalho no canônico e conferir.** Dizer isso em toda chamada a subagente e em todo brief de dev externo.
+
+**Why:** o `/tmp` é tmpfs; encheu duas vezes em 23/nov e a máquina quase travou. Eu também tentei apagar o scratchpad antes de verificar se havia trabalho único, e o usuário me barrou com raiva.
+
+**How to apply:** commits de documentação do PM: `git switch main`, `git merge --ff-only origin/main`, editar, commitar, `git push origin main`, `git switch <branch anterior>`. Gate de um patch: no branch dele, no canônico, nunca numa árvore extraída. Isto SUBSTITUI a instrução do prompt do PM de usar worktree do `main`.

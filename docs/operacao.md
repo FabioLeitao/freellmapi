@@ -33,7 +33,7 @@ Pré-voo: modo=desligado (sem builder)
 - **Decisão (usuário, 2026-11-23):** o opencode codifica todas as tarefas de dev, como teste. Se o teste não render (a parada de duas rodadas de correção do dev externo, ou um defeito que só a conferência pega duas vezes), o PM leva ao usuário a decisão de voltar ao dev do framework. Arquiteto, QA e revisor continuam sendo agentes do Claude Code (o revisor precisa ser outro modelo que o dev).
 - **Forma da tarefa:** o opencode só recebe um **passo mecânico, depois do desenho e dos testes do QA mesclados**: 1 a 2 arquivos, método ou trecho nomeado, cerca de 20 linhas de diff, teste que já falha. Tarefa que descobre fatos (F0.1, a causa do round trip; M1.1, a reprodução do 429; M3.3; M3.4) é diagnosticada pelo arquiteto no desenho, que a quebra em passos mecânicos; o opencode no `auto` inventa fatos.
 - **Modelo:** o Auto do FreeLLMAPI primeiro (a config já traz `freellmapi/auto`); só se fixa um modelo depois de o Auto falhar na tarefa, e o evento registra o motivo e as tentativas.
-- **Como roda:** TUI num painel novo do herdr, nunca `opencode run`; branch da tarefa no clone limpo (sem worktree destacado); ref `backup/pre-<tarefa>` antes de começar; brief em inglês, inline, de cerca de 16 linhas; o contrato já vem da config do opencode. Segue as skills `operar-dev-externo` e `operar-opencode`.
+- **Como roda:** TUI num painel novo do herdr, nunca `opencode run`; branch da tarefa no clone canônico (nunca worktree nem cópia); ref `backup/pre-<tarefa>` antes de começar; brief em inglês, inline, de cerca de 16 linhas; o contrato já vem da config do opencode. Segue as skills `operar-dev-externo` e `operar-opencode`.
 - **O que o opencode nunca faz:** commit, push, `gh`, rede, instalar pacote, ler chave ou `.env`. **Commit e PR são do PM.**
 - **Modelo por harness (ordem do operador, 2026-11-23, relatada pela sessão Owl):** o opencode passa pelo FreeLLMAPI e começa **sempre no Auto**; fixar um modelo só depois de o Auto falhar na tarefa. O evento da tarefa registra qual conta e qual modelo escreveram o patch.
 - **No brief:** a linha literal `Do not open, comment on, react to or close anything in tashfeenahmed/freellmapi (the upstream). Issues and PRs go only to the fork.` (trava dura acima).
@@ -51,6 +51,16 @@ Vale para todos os repos. Aqui ele se aplica assim, **de forma provisória** (a 
 3. **Antes de qualquer push para o CI do GitHub:** este repo **não tem** `scripts/check-all.sh`. Até o usuário decidir criar um, vale o equivalente local: os passos do `ci.yml` no SHA exato (`npm ci`, lint, testes, build e o round trip das migrações). O pré-voo no Buildbot está **desligado: o repo não tem builder** (linha `Pré-voo:` acima). Pedir um builder é decisão do usuário.
 4. **CI do GitHub verde.** O espelho do GitLab não existe neste fork: não se aplica.
 5. **Merge só pelo `merge-green FabioLeitao/freellmapi#<n>`** (vale para PR no fork; PR no upstream é mesclado pelo mantenedor), que pergunta ao usuário (HITL) e só mescla se o PR continua limpo e com o mesmo head. O PM **não** roda `gh pr merge` neste repo. O resto do modo autônomo continua valendo.
+
+## Disco e temporários (ordem do operador, 2026-11-24; vale para TODOS os agentes)
+
+- **Nunca worktree** (`git worktree add`, nem o `--worktree`/`-w` de harness algum), para nenhum agente: PM, subagente, revisor, duelo ou dev externo.
+- **Nunca cópia ou clone do repositório** em `/tmp` (é RAM, tmpfs), em `~/.cache` ou em qualquer outra pasta.
+- **Todo trabalho vai num branch do clone canônico** (`git switch -c`). Quem precisa de outro branch troca o do clone com a árvore limpa e volta ao terminar. Clone sujo se resolve com commit num branch, nunca com worktree.
+- **Temporário só pequeno**, em `mktemp`, apagado por quem o criou (`trap`), também em falha.
+- **Antes de apagar qualquer temporário que já exista, guardar o trabalho no caminho canônico (commit) e conferir; só depois apagar.**
+- **Todo brief de dev externo e toda chamada a subagente leva, em inglês e literal:** `Never create git worktrees or repo copies anywhere (not under /tmp, not under ~/.cache); work only on a branch of the canonical clone. Delete any temporary file you create as soon as you no longer need it.`
+- **Estado em 2026-11-24:** antes desta ordem o PM criou um worktree no `/tmp` (tudo já no `origin/main`) e duas cópias do repositório em `~/.cache/claude-pm/` para o opencode. O trabalho delas já está guardado em branches do clone canônico (`tarefa/F0.1-tirar-migracao-nvidia`, `patch/M1.1-rca-imagem-historico`, `docs/fluxo-patches-upstream`). Apagar essas cópias depende do "pode" do usuário. O PM faz os commits de documentação trocando o branch do canônico para `main` e voltando em seguida.
 
 ## Build
 
