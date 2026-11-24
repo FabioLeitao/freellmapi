@@ -1,0 +1,1 @@
+- [Pontos frágeis do fork](project_pontos_frageis.md) — it.fails não serve, modelos no catálogo assinado, porta 3001, migração em 3 lugares, worktree
