@@ -9,7 +9,7 @@ metadata:
 
 **Why:** primeiro o usuário ordenou "nada vai ao upstream" (o goose confundira o fork com o upstream); em 2026-11-23 ele reverteu, pelo chat: "Sim, como owl recomendou. Seguindo solicitação do upstream" (P4). O motivo do upstream é o `CONTRIBUTING.md` de lá (teste, `npm test`, uma mudança por PR, nada pago, migração em arquivo novo, `check:i18n`, nenhum limite inventado).
 
-**Trava dura (2026-11-23, relatada pela sessão Owl com as palavras do operador):** "NAO É PRA TER NENHUM PR UPSTREAM AINDA ANTES DE VALIDARMOS AS MUDANCAS NO FREELLMAPI LOCALMENTE". Nenhum PR, issue nem comentário (nem fechar) no upstream até a validação local (fork e `:3001`); depois, um "vai" por PR. Todo brief de dev externo leva `Do not open, comment on or close anything in tashfeenahmed/freellmapi`. Não mexer em #2061 a #2063 nem na #2074.
+**Trava dura (2026-11-23, relatada pela sessão Owl com as palavras do operador):** "NAO É PRA TER NENHUM PR UPSTREAM AINDA ANTES DE VALIDARMOS AS MUDANCAS NO FREELLMAPI LOCALMENTE". Nenhum PR, issue nem comentário (nem fechar) no upstream até a validação local (fork e `:3001`); depois, um "vai" por PR. Todo brief de dev externo leva `Do not open, comment on, react to or close anything in tashfeenahmed/freellmapi (the upstream). Issues and PRs go only to the fork.`. Não mexer em #2061 a #2063 nem na #2074.
 
 **How to apply:** conferir o destino antes de todo `gh pr create`/`gh issue create`; nenhum agente abre nada no upstream sem o "vai"; repetir a regra na nota de passagem a qualquer dev externo.
 

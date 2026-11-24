@@ -15,7 +15,7 @@ Pré-voo: modo=desligado (sem builder)
 - Nas palavras do operador, relatadas pela sessão Owl: "NAO É PRA TER NENHUM PR UPSTREAM AINDA ANTES DE VALIDARMOS AS MUDANCAS NO FREELLMAPI LOCALMENTE". O usuário não a repetiu neste chat; ela só restringe e é coerente com as ordens que ele deu aqui.
 - **Nenhum PR, issue nem comentário** (nem fechar ou reabrir) em `tashfeenahmed/freellmapi` até a mudança estar **validada localmente**, no fork e no `:3001`, conforme a trava da F0.1. Quem decide que está validada é o usuário.
 - Depois disso, cada PR ao upstream ainda precisa do "vai" do usuário, **um por um**.
-- Vale para **todos** os agentes e devs externos (opencode, goose e qualquer outro). Todo brief de dev externo leva, em inglês e literal: `Do not open, comment on or close anything in tashfeenahmed/freellmapi`.
+- Vale para **todos** os agentes e devs externos (opencode, goose e qualquer outro). Todo brief de dev externo leva, em inglês e literal: `Do not open, comment on, react to or close anything in tashfeenahmed/freellmapi (the upstream). Issues and PRs go only to the fork.`.
 - Hoje, no upstream: as issues #2061, #2062 e #2063 (abertas, sem resposta) e a PR #2074 (fechada sem merge, aberta antes da trava). **Ninguém mexe nelas por ora.**
 
 ## Repositório e destino dos patches (ordens do usuário, 2026-11-23)
@@ -34,7 +34,8 @@ Pré-voo: modo=desligado (sem builder)
 - **Modelo:** o Auto do FreeLLMAPI primeiro (a config já traz `freellmapi/auto`); só se fixa um modelo depois de o Auto falhar na tarefa, e o evento registra o motivo e as tentativas.
 - **Como roda:** TUI num painel novo do herdr, nunca `opencode run`; branch da tarefa no clone limpo (sem worktree destacado); ref `backup/pre-<tarefa>` antes de começar; brief em inglês, inline, de cerca de 16 linhas; o contrato já vem da config do opencode. Segue as skills `operar-dev-externo` e `operar-opencode`.
 - **O que o opencode nunca faz:** commit, push, `gh`, rede, instalar pacote, ler chave ou `.env`. **Commit e PR são do PM.**
-- **No brief:** a linha literal `Do not open, comment on or close anything in tashfeenahmed/freellmapi` (trava dura acima).
+- **Modelo por harness (ordem do operador, 2026-11-23, relatada pela sessão Owl):** o opencode passa pelo FreeLLMAPI e começa **sempre no Auto**; fixar um modelo só depois de o Auto falhar na tarefa. O evento da tarefa registra qual conta e qual modelo escreveram o patch.
+- **No brief:** a linha literal `Do not open, comment on, react to or close anything in tashfeenahmed/freellmapi (the upstream). Issues and PRs go only to the fork.` (trava dura acima).
 - **Conferência determinística do PM em todo passo,** sem acreditar no "feito": arquivos tocados contra a lista, remoções fora do escopo (`git diff -U0 | grep '^-'` zero), `git reflog`, o teste vermelho antes do verde e a prova inteira rodada pelo PM, não só o teste novo.
 - **Cuidado próprio deste projeto:** o opencode usa o servidor local deste mesmo projeto (`127.0.0.1:3001`) como provedor. Nenhuma tarefa derruba, reinicia nem reconstrói esse servidor, e nenhum teste ou migração toca o banco real (`freeapi.db`): só banco de teste descartável.
 - **PR:** o opencode nunca abre PR; o PM abre, pelo fluxo de patch acima, só depois do gate local verde no SHA exato e do "vai" do usuário, que é regra dele.
