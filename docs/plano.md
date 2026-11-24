@@ -67,6 +67,8 @@ Não funcionais
 | R18 | Textos novos do painel entram em todos os arquivos de locale, seguindo `docs/TRANSLATION.md` e o validador. | M2 |
 | R19 | Todo patch segue o `CONTRIBUTING.md` do upstream: `.editorconfig` e tsconfig, `npm test` verde, `npm run check:i18n` em `client/`, nada reformatado fora da mudança, nenhum limite, id de modelo ou endpoint inventado (conferido no provedor) e testes que exercitam a mudança de verdade. O autor responde pelo diff inteiro. | todos |
 | R20 | Todo patch ao upstream é uma mudança por PR, em branch nascido de `upstream/main` (nunca do `main` do fork), sem `docs/operacao.md`, `docs/plano.md`, `docs/custos.md`, `docs/arquitetura.md`, `docs/decisoes.md`, `docs/desenho/`, PDFs nem `.claude/agent-memory/`. O PR no upstream só abre com o "vai" do usuário. **Trava dura (2026-11-23): nenhum PR, issue ou comentário no upstream antes de a mudança estar validada localmente, no fork e no `:3001`; depois, um "vai" por PR (`docs/operacao.md`).** | todos |
+| R24 | Push só de documentação, PDF ou memória do PM no `main` do fork não dispara o CI nem publica imagem; código continua passando por todo o CI, sem baixar o rigor. | F0 |
+| R25 | O fork tem um gate local único (`scripts/check-all.sh`) que espelha o `ci.yml`, roda sem Docker (Node do host; modo opcional em contêiner com podman), sem tocar o `:3001` nem o banco real, e sai com 0 só com tudo verde. | F0 |
 
 ## Timeline de tarefas
 
@@ -84,6 +86,8 @@ Não funcionais
 | F0.6 | Sincronizar o `main` do fork com o upstream (merge, sem rebase), antes de cortar qualquer branch e de diagnosticar F0.1. | gestão | R20 | — |
 | F0.7 | Fixar o fluxo de um patch até o upstream (branch de `upstream/main`, gate local, PR de revisão no fork que não é mesclado, abertura no upstream) como decisão do projeto (ADR), a partir do rascunho de `docs/operacao.md`. | gestão (arquiteto) | R19, R20 | F0.2, F0.6 |
 | F0.8 | Substituir a PR #6: refazer os seus itens como branches de `upstream/main`, um por mudança (são as tarefas M1.2, M2.1 e M2.2), e fechar a #6 com um comentário que aponte a substituta e aposentar, sem apagar, os branches `feature/epic-fixes`, `-2`, `-final` e `all-fixes-epic`. No upstream, as issues #2061 a #2063 e a PR #2074 só recebem comentário ou fechamento com o "vai" do usuário. | gestão | R14, R20 | F0.7, M1.2, M2.1 |
+| F0.9 | Poupar CI e publicação de imagem do fork: `paths-ignore` para `docs/**`, PDFs e `.claude/agent-memory/**` no `push` de `ci.yml` e `docker.yml` (só no fork). O desenho avalia também se o `docker.yml` deve publicar imagem a partir do fork a cada push no `main`, sem baixar o rigor do CI para código. *(pedida pelo arquiteto-senior na F0.2; decidida pelo usuário em 2026-11-23)* | backend | R12, R24 | F0.2 |
+| F0.10 | Gate local `scripts/check-all.sh` só do fork: espelha o `ci.yml` (`npm ci`, round trip das migrações, `npm test`, lint, build e `check:i18n`), sai com 0 só com tudo verde, usa o Node do host (modo opcional em contêiner com podman) e nunca toca o `:3001` nem o banco real. *(pedida pelo arquiteto-senior na F0.2; decidida pelo usuário em 2026-11-23)* | backend | R12, R14, R25 | F0.2 |
 
 ### M1, Diagnóstico de falhas com imagens (issues #2, #3, #4)
 
@@ -141,7 +145,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | #5 | **M2.2**, reaberta em 2026-11-23 (estava fechada como "completed" por engano: o commit do Grok/xAI nunca chegou ao `main`); adiada até a P2 |
 | PR #6 | não segue como está; é substituída por F0.8 (fechar com o motivo quando as mudanças únicas tiverem PR) |
 
-**Tarefa → issue (publicadas em 2026-11-23; última sincronização 2026-11-23):** F0.1 #8, F0.2 #9, F0.3 #10, F0.5 #11, F0.6 #12, F0.7 #13, F0.8 #14, M1.1 #3, M1.2 #4, M1.3 #15, M2.1 #16, M2.2 #5, M2.3 #17, M3.1 #18, M3.2 #19, M3.3 #20, M3.4 #21, M3.5 #22, M4.1 #23, M4.2 #24. F0.4 foi riscada e nunca teve issue (o ID não volta). A #7 é a issue de registro; a #1 é o guarda-chuva de M3.
+**Tarefa → issue (publicadas em 2026-11-23; última sincronização 2026-11-23):** F0.1 #8, F0.2 #9, F0.3 #10, F0.5 #11, F0.6 #12, F0.7 #13, F0.8 #14, M1.1 #3, M1.2 #4, M1.3 #15, M2.1 #16, M2.2 #5, M2.3 #17, M3.1 #18, M3.2 #19, M3.3 #20, M3.4 #21, M3.5 #22, M4.1 #23, M4.2 #24, F0.9 #25, F0.10 #26. F0.4 foi riscada e nunca teve issue (o ID não volta). A #7 é a issue de registro; a #1 é o guarda-chuva de M3.
 
 ## Testes (para o QA)
 
@@ -156,6 +160,8 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | T0.7 | `git diff --stat upstream/main...<branch de patch>`. | Só os arquivos da mudança; nenhum de `docs/`, `.claude/` nem PDF. | R20 |
 | T0.8 | No SHA exato do branch de patch: `npm test`, `npm run build` e `npm run check:i18n` (em `client/`). | Todos verdes; o teste novo falha sem a mudança e passa com ela. | R14, R19 |
 | T0.9 | Durante a trava: `gh pr list`, `gh issue list` e `gh search` por autor em `tashfeenahmed/freellmapi`. | Nenhum PR, issue ou comentário novo da conta do usuário; #2061 a #2063 e #2074 inalteradas. | R20 |
+| T0.10 | Commit só com `docs/` e `.claude/agent-memory/**` num branch de teste do fork, depois um commit que altera `server/src/**`. | O primeiro não dispara `ci.yml` nem `docker.yml`; o segundo dispara os dois. | R24 |
+| T0.11 | Rodar `scripts/check-all.sh` no SHA candidato com o `:3001` no ar; depois quebrar um teste de propósito e rodar de novo. | Saída 0 com tudo verde e diferente de 0 com o teste quebrado; o `:3001` e o `freeapi.db` real não mudam. | R25, R12 |
 | T1.1 | Imagem no histórico, nenhum modelo de visão habilitado. | 422 `code: no_vision_model`, `X-Vision-Model-Available: false`, `X-Fallback-Attempts`, `X-Fallback-Trail`, todos como cabeçalhos HTTP de verdade (hoje os dois do `a70c4e8` são chaves do corpo JSON). | R1, R2 |
 | T1.2 | O mesmo, com histórico reinjetado pelo handoff de memória. | 422, não 429. *(depende de P1)* | R1, R3 |
 | T1.3 | O mesmo, pela cadeia MCP. | 422, não 429. | R3 |
@@ -209,3 +215,4 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 - **Trava dura sobre o upstream (2026-11-23, relatada pela sessão Owl):** nada vai ao upstream antes de a mudança estar validada localmente, no fork e no `:3001`. A P4 (patches seguem ao upstream) continua valendo, mas só depois dessa validação e com o "vai" do usuário por PR.
 - **F0.2 entregue pelo arquiteto (2026-11-23, commits `11fff31e` e `7d52c79b`):** `docs/arquitetura.md` e `docs/decisoes.md` (ADR-001 a ADR-005). Ficam para a F0.7: onde moram os testes de aceitação num branch de patch nascido de `upstream/main`, e o helper `pendente` (o `it.fails` não serve).
 - **Pedidos do arquiteto, à espera do usuário (nenhuma issue aberta):** (1) `paths-ignore` para `docs/**` e `.claude/agent-memory/**` no `push` de `ci.yml` e `docker.yml` do fork; hoje o `docker.yml` constrói e publica imagens a cada push no `main` do fork; (2) impedir que os testes do server acessem a rede de verdade (candidato a patch ao upstream, baixa urgência); (3) criar um `scripts/check-all.sh` só do fork como gate local.
+- **Decisão do usuário (2026-11-23):** os itens (1) e (3) dos pedidos do arquiteto viram F0.9 e F0.10 ("é pra fazer"). O item (2), testes sem rede, segue sem decisão. Em pergunta do usuário sobre paravirtualização: o projeto roda nativo (Node 20.18 a 24; confirmado no host); o `:3001` é um contêiner podman; por isso o gate usa o Node do host e tem modo opcional em podman.
