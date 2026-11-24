@@ -164,3 +164,20 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
 - **Consequências:** como o commit do QA entra no branch (PR para o branch de patch ou commit do PM)
   é decisão da F0.7.
 - **Decidido por:** arquiteto-senior (desenho da M1.1).
+
+## ADR-009: O fork constrói a imagem nos PRs e não publica
+
+- **Data:** 2026-11-24
+- **Status:** aceita como padrão **reversível**, pendente de decisão do usuário
+- **Contexto:** o `docker.yml` do upstream publica no ghcr em todo push no `main` e em tag. No fork,
+  ele nunca passou (o nome da imagem com o dono em maiúsculas é inválido), e o usuário ainda não
+  decidiu se o fork publica imagem. Publicar a cada push gastaria minutos de CI e espaço de pacote
+  sem uso definido; o servidor local é construído pelo wrapper de build, não pelo ghcr.
+- **Decisão:** o nome da imagem passa a sair em minúsculas (`${GITHUB_REPOSITORY_OWNER,,}`); os jobs
+  `build` (em push) e `merge` só rodam quando `github.repository == 'tashfeenahmed/freellmapi'`; nos
+  PRs o `build` roda sempre, sem publicar. Para publicar em `ghcr.io/fabioleitao/freellmapi`, basta
+  acrescentar o fork às duas condições (frase exata no desenho da F0.9).
+- **Consequências:** o fork tem a checagem de build em todo PR e não publica nada. Se o usuário
+  decidir publicar, a mudança é de 2 linhas e este ADR passa a ser substituído.
+- **Decidido por:** arquiteto-senior (desenho da F0.9), como padrão proposto pelo project-manager;
+  a decisão final é do usuário.
