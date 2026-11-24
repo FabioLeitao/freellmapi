@@ -1,6 +1,6 @@
 # Plano do projeto: FreeLLMAPI (fork local)
 
-Atualizado em 2026-11-23 (rodada 1; revisado depois da resposta de P4). Repositório de trabalho: `FabioLeitao/freellmapi`. Estado: **plano pronto para aprovação do cliente; nenhuma issue de tarefa publicada.**
+Atualizado em 2026-11-23 (rodada 1; revisado depois da resposta de P4). Repositório de trabalho: `FabioLeitao/freellmapi`. Estado: **plano aprovado em 2026-11-23 (pelo usuário, no chat); tarefas publicadas em 2026-11-23.**
 
 ## Resumo
 
@@ -12,7 +12,7 @@ O projeto já existe e funciona. O plano cobre só o **backlog do fork**: o que 
 4. **M3, Avaliação e admissão de provedores gratuitos:** termos oficiais, critérios de admissão, `served_model` e medição comparativa antes de mexer no `auto`; o Kilo só entra se passar, desligado por padrão.
 5. **M4, Patches locais para o upstream:** o que já está só no fork (`c1c07bb` mistura reasoning models, headers de RCA do 429 e embeddings NVIDIA) é separado em mudanças únicas, cada uma com teste, para o upstream.
 
-Ordem: **F0.1 e F0.6 são independentes** (o dogfooding de 2026-11-23 mostrou que o vermelho vem da migração local, e não da defasagem). F0.1 destrava o CI dos PRs de revisão no fork; F0.6 destrava os branches de patch. M1, M2 e M4 andam em paralelo depois deles. M3 começa pela leitura dos termos (F0 não a bloqueia) e só chega ao código depois das respostas do cliente.
+Ordem: **F0.1 e F0.6 são independentes** (o dogfooding de 2026-11-23 mostrou que o vermelho vem da migração local, e não da defasagem). F0.1 destrava o CI dos PRs de revisão no fork; F0.6 destrava os branches de patch. **Ordem aprovada (2026-11-23): F0.1, depois M1 (#3 e #4); a #5 (M2.2) fica estacionada até a P2; o sync (F0.6) só entra antes do primeiro PR ao upstream, que está travado.** M1, M2 e M4 andam em paralelo depois deles. M3 começa pela leitura dos termos (F0 não a bloqueia) e só chega ao código depois das respostas do cliente.
 
 **Destino (P4, respondida em 2026-11-23):** os patches seguem ao upstream, seguindo o `CONTRIBUTING.md` de lá. Branch de patch nasce de `upstream/main`, uma mudança por PR, sem arquivos de gerência. O fork é a base de trabalho e de revisão (`docs/operacao.md`).
 
@@ -187,7 +187,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 
 | ID | Pergunta | Suposição adotada | Dependem dela |
 |---|---|---|---|
-| P1 *(prioritária)* | Histórico com imagem e sem modelo de visão: devolver erro 422 claro, ou descartar as imagens do histórico e seguir? | 422 `no_vision_model`, como pedem as issues. | R1, M1.1, M1.2, T1.1 a T1.7 |
+| P1 *(prioritária)* | Histórico com imagem e sem modelo de visão: devolver erro 422 claro, ou descartar as imagens do histórico e seguir? | 422 `no_vision_model`, como pedem as issues. **Seguir pela suposição por decisão do usuário (2026-11-23): causa explícita (422 `no_vision_model` ou código específico), nunca 429 genérico.** | R1, M1.1, M1.2, T1.1 a T1.7 |
 | P2 *(prioritária)* | Os limites gratuitos de Grok e xAI vêm de fonte oficial? Serviço que exige crédito ou cartão pode entrar (o `CONTRIBUTING.md` proíbe)? | Só entra com plano gratuito comprovado nos termos oficiais; sem prova, fica marcado "não verificado" e fora do `auto`. | R5, M2.2, T2.3 a T2.5 |
 | P3 | O Cursor é uma IDE, sem API compatível com OpenAI encontrada (como o Kiro da issue #1). Sai do escopo? | Sai, até haver evidência de uma API. | R6, M2.3, T2.6 |
 | P5 | Os 6 critérios de admissão da issue #1 estão aprovados? Provedor que treina com os dados pode atender conteúdo sensível? | Aprovados como estão; provedor que treina com dados só atende conteúdo público. | R8, R11, M3.1, M3.4, M3.5, T3.2, T3.6 |
