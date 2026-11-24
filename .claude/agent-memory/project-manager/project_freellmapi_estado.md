@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-**Rodadas 1 a 4 encerradas (custo US$ 1,67 e US$ 2,70 em `docs/custos.md`; eventos `custo` na issue #7); a próxima rodada começa na hora do último evento `custo`.** **Estado (2026-11-23):** estrutura de gerência criada no `main` (`docs/operacao.md`, `docs/description.md`, `docs/plano.md`). Plano pronto para aprovação do cliente; **nenhuma issue de tarefa publicada**; nenhum agente chamado.
+**Rodadas 1 a 4 encerradas (custo US$ 1,67 e US$ 2,70 em `docs/custos.md`; eventos `custo` na issue #7); a próxima rodada começa na hora do último evento `custo`.** **Estado (2026-11-23):** estrutura de gerência criada no `main` (`docs/operacao.md`, `docs/description.md`, `docs/plano.md`). Plano **aprovado em 2026-11-23** (usuário, no chat); tarefas publicadas (issues #8 a #24, mais #3, #4 e #5 adotadas).
 
 **Cliente:** Fabio (product owner e usuário do time). A descrição foi levantada pelo PM a partir das issues #1 a #4, da PR #6 e dos commits locais; não houve briefing.
 
@@ -35,3 +35,5 @@ metadata:
 **Dogfooding de F0.6 (rodada 3, 2026-11-23):** mescla fork + upstream limpa e não muda o esquema; boot do artefato igual ao `:3001`; a causa do `main` vermelho (F0.1) é a migração local de `c1c07bb` (nome com ponto, ordem no registro, parâmetro do `node:sqlite`, round trip). F0.1 e F0.6 são independentes. **O sync não foi empurrado ao `main`: espera a decisão do usuário** (PR de sync pelo `merge-green`, ou F0.1 antes). O `:3001` real é um contêiner podman com imagem que não inclui os commits locais.
 
 **Correções da rodada 4 (valem sobre o parágrafo do dogfooding acima):** o `npm test` da raiz parou no server; cli, client (com `check:i18n`), hooks e bootstrap rodados à parte passam. A imagem do `:3001` tem 52 migrações (sem a NVIDIA), então **nenhum build do `main` do fork vai ao `:3001` antes de F0.1**. O round trip falha porque os ids de `embedding_models` mudam (13/14 viram 15/16). O relato do Owl foi conferido: os "headers" de RCA estão no corpo JSON; o log da PR #6 dispara em todo 422 de imagem; issues #2061 a #2063 e PR #2074 existem no upstream em nome do usuário (nada se mexe lá sem o "vai"); `a088fc8e` do upstream pode tirar a M4.2 do caminho do upstream. **Aberto com o usuário:** (1) PR de sync ou F0.1 antes; (2) onde a gerência mora, já que o fork é público e R16 proíbe informação de outros projetos e custo.
+
+**Aprovação e publicação (2026-11-23):** o usuário aprovou o escopo #3, #4 e #5 no fork, com F0.1 primeiro e sync depois, e adiou a #5 (P2). Tarefas publicadas e sincronizadas em 2026-11-23 (mapa tarefa → issue no fim de `docs/plano.md`). Escopo imediato: F0.1 (#8), M1.1 (#3), M1.2 (#4), M1.3 (#15); #5 (M2.2) estacionada. Próximo: preparação do fluxo (arquiteto: base F0.2 e desenhos de F0.1 e M1.1; QA; opencode como dev externo, brief com a linha `Do not open, comment on or close anything in tashfeenahmed/freellmapi`; revisor no Claude Code).

@@ -134,11 +134,13 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | Issue do fork | Destino |
 |---|---|
 | #1 | M3 (guarda-chuva; as tarefas M3.x citam #1) |
-| #2 | ~~duplicata de #3~~ — itens vão para M1.1 e M1.2; fechar com o motivo na publicação |
-| #3 | ~~duplicata de #2 e superada por #4~~ — itens vão para M1.1 e M1.3 |
+| #2 | ~~duplicata de #3~~ — fechada; os itens seguem em M1.1 (#3) |
+| #3 | **M1.1** (issue adotada em 2026-11-23; a #2 era duplicata dela); os cabeçalhos HTTP ficam na M1.3 (#15) |
 | #4 | M1.2 |
-| #5 (fechada) | M2.2 reabre o assunto, porque só a interface foi feita |
+| #5 | **M2.2**, reaberta em 2026-11-23 (estava fechada como "completed" por engano: o commit do Grok/xAI nunca chegou ao `main`); adiada até a P2 |
 | PR #6 | não segue como está; é substituída por F0.8 (fechar com o motivo quando as mudanças únicas tiverem PR) |
+
+**Tarefa → issue (publicadas em 2026-11-23; última sincronização 2026-11-23):** F0.1 #8, F0.2 #9, F0.3 #10, F0.5 #11, F0.6 #12, F0.7 #13, F0.8 #14, M1.1 #3, M1.2 #4, M1.3 #15, M2.1 #16, M2.2 #5, M2.3 #17, M3.1 #18, M3.2 #19, M3.3 #20, M3.4 #21, M3.5 #22, M4.1 #23, M4.2 #24. F0.4 foi riscada e nunca teve issue (o ID não volta). A #7 é a issue de registro; a #1 é o guarda-chuva de M3.
 
 ## Testes (para o QA)
 
