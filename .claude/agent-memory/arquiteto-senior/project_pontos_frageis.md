@@ -13,6 +13,9 @@ Notados na base (F0.2, 2026-11-23):
 - **Porta 3001 e `freeapi.db` são do servidor local em uso** (o dev externo o usa como provedor). Nenhum desenho manda subir o compose nem tocar o banco real.
 - 18 de 31 rotas chamam `getDb()` direto: não escreva "rota nunca acessa o banco".
 - `ci.yml`/`docker.yml` sem `paths-ignore`: commit de docs no `main` leva `[skip ci]`.
+- **Teste de rota com chave real de provedor vai à rede:** uma chave `groq` sem cooldown fez chamada real (401) num teste descartável. Só crie chaves cujos modelos fiquem todos barrados antes do envio (cooldown, cota, ou sem visão num pedido com imagem).
+- `X-Fallback-Attempts`/`X-Fallback-Trail` já existem (`setFallbackHeaders`) no 429; o plano supunha que não. Confira o código antes de aceitar a premissa de uma issue.
+- Repro rápido: worktree descartável de `origin/main` + `npm ci` (uns 2 min) + teste `zz-*.test.ts` gravando num arquivo do scratchpad (o console da app é interceptado).
 - A pasta do projeto costuma estar no branch de outro agente: grave pelo worktree de `origin/main` e a memória vai em `<worktree>/.claude/agent-memory/arquiteto-senior/`.
 
 **Why:** cada item custaria uma revisão de desenho se descoberto pelo dev no meio da tarefa.
