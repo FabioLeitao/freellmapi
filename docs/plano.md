@@ -65,7 +65,7 @@ Não funcionais
 | R17 | Todo build com os nossos patches usa o `freellmapi-databoar-build`, e a versão marcada chega ao painel. | F0 |
 | R18 | Textos novos do painel entram em todos os arquivos de locale, seguindo `docs/TRANSLATION.md` e o validador. | M2 |
 | R19 | Todo patch segue o `CONTRIBUTING.md` do upstream: `.editorconfig` e tsconfig, `npm test` verde, `npm run check:i18n` em `client/`, nada reformatado fora da mudança, nenhum limite, id de modelo ou endpoint inventado (conferido no provedor) e testes que exercitam a mudança de verdade. O autor responde pelo diff inteiro. | todos |
-| R20 | Todo patch ao upstream é uma mudança por PR, em branch nascido de `upstream/main` (nunca do `main` do fork), sem `docs/operacao.md`, `docs/plano.md`, `docs/custos.md`, PDFs nem `.claude/agent-memory/`. O PR no upstream só abre com o "vai" do usuário. | todos |
+| R20 | Todo patch ao upstream é uma mudança por PR, em branch nascido de `upstream/main` (nunca do `main` do fork), sem `docs/operacao.md`, `docs/plano.md`, `docs/custos.md`, PDFs nem `.claude/agent-memory/`. O PR no upstream só abre com o "vai" do usuário. **Trava dura (2026-11-23): nenhum PR, issue ou comentário no upstream antes de a mudança estar validada localmente, no fork e no `:3001`; depois, um "vai" por PR (`docs/operacao.md`).** | todos |
 
 ## Timeline de tarefas
 
@@ -152,6 +152,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | T0.6 | Depois de F0.6: `git merge-base --is-ancestor upstream/main origin/main`. | Saída 0: o fork contém o `upstream/main`. | R20 |
 | T0.7 | `git diff --stat upstream/main...<branch de patch>`. | Só os arquivos da mudança; nenhum de `docs/`, `.claude/` nem PDF. | R20 |
 | T0.8 | No SHA exato do branch de patch: `npm test`, `npm run build` e `npm run check:i18n` (em `client/`). | Todos verdes; o teste novo falha sem a mudança e passa com ela. | R14, R19 |
+| T0.9 | Durante a trava: `gh pr list`, `gh issue list` e `gh search` por autor em `tashfeenahmed/freellmapi`. | Nenhum PR, issue ou comentário novo da conta do usuário; #2061 a #2063 e #2074 inalteradas. | R20 |
 | T1.1 | Imagem no histórico, nenhum modelo de visão habilitado. | 422 `code: no_vision_model`, `X-Vision-Model-Available: false`, `X-Fallback-Attempts`, `X-Fallback-Trail`, todos como cabeçalhos HTTP de verdade (hoje os dois do `a70c4e8` são chaves do corpo JSON). | R1, R2 |
 | T1.2 | O mesmo, com histórico reinjetado pelo handoff de memória. | 422, não 429. *(depende de P1)* | R1, R3 |
 | T1.3 | O mesmo, pela cadeia MCP. | 422, não 429. | R3 |
@@ -201,3 +202,4 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 - Os commits `c1c07bb` e `a70c4e8` entraram direto no `main` do fork. A partir daqui, todo código entra por branch de patch revisado; o `c1c07bb` é separado em M1, M4.1 e M4.2.
 - **Quem codifica (decidido pelo usuário em 2026-11-23):** o opencode, em todas as tarefas de dev, em teste; os devs do framework não são chamados (`docs/operacao.md`). As tarefas que descobrem fatos (F0.1, M1.1, M3.3, M3.4) são diagnosticadas pelo arquiteto no desenho e entregues ao opencode em passos mecânicos.
 - **Fork público × R16:** o `main` público do fork já tem custo por rodada, nomes de wrappers e de infraestrutura locais, a etiqueta da imagem e regras de outro repositório (#104). R16 pede nenhuma informação de outros projetos. Onde a gerência mora é decisão do usuário; o histórico não foi reescrito.
+- **Trava dura sobre o upstream (2026-11-23, relatada pela sessão Owl):** nada vai ao upstream antes de a mudança estar validada localmente, no fork e no `:3001`. A P4 (patches seguem ao upstream) continua valendo, mas só depois dessa validação e com o "vai" do usuário por PR.

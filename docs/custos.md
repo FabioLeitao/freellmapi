@@ -10,7 +10,8 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 | 2 | 2026-11-23T22:53 | 2,70 | nenhum |
 | 3 | 2026-11-23T23:41 | 1,84 | nenhum |
 | 4 | 2026-11-23T23:53 | 1,03 | nenhum |
-| **Acumulado** | | **7,24** | |
+| 5 | 2026-11-23T23:59 | 0,39 | nenhum |
+| **Acumulado** | | **7,63** | |
 
 ## Rodada 1, desde 2026-11-23T22:47
 
@@ -43,3 +44,11 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 - **Por tarefa:** coordenação 1,03.
 - **Entregas:** complemento do dogfooding de F0.6 (cli, client, hooks, bootstrap e `check:i18n` passam); conferência do relato da sessão Owl; correção das minhas afirmações (a imagem do `:3001` não tem a migração NVIDIA, e o round trip falha por ids); trava de build do `main` do fork no `:3001`.
 - **O que chamou a atenção:** o `main` público do fork carrega gerência (custos, nomes de infraestrutura local); a decisão de onde ela mora é do usuário.
+
+## Rodada 5, desde 2026-11-23T23:59
+
+- **Total:** US$ 0,39.
+- **Por agente:** project-manager 0,39.
+- **Por tarefa:** coordenação 0,39.
+- **Entregas:** trava dura sobre o upstream registrada em `docs/operacao.md` e no plano (R20, T0.9), com a frase literal para o brief do dev externo.
+- **O que chamou a atenção:** a ordem veio por relato da sessão Owl, não pelo usuário; registrada porque só restringe.
