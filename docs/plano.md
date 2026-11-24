@@ -51,7 +51,8 @@ Funcionais
 | R10 | Nenhuma prioridade do `auto` muda sem uma medição comparativa reproduzível anexada. *(depende de P7)* | M3 |
 | R11 | O Kilo, se aprovado, entra como adaptador novo, com teste, desligado por padrão. *(depende de P5)* | M3 |
 | R21 | O ajuste de reasoning models chega ao upstream como PR única, com teste. | M4 |
-| R22 | O catálogo de embeddings NVIDIA 3.5 chega ao upstream como PR única, com migração em arquivo novo, teste e round trip verde. | M4 |
+| R22 | O catálogo de embeddings NVIDIA 3.5 chega ao upstream como PR única, com teste, **pelo catálogo assinado e não por migração de dados** (ADR-003 do arquiteto, decisão do upstream em `a088fc8e`, #1946); se ainda precisar de migração de esquema, em arquivo novo com round trip verde. No fork, uma exceção se decide no desenho da tarefa. | M4 |
+| R23 | Toda resposta 429 e todo bloqueio do roteador deixam, no log estruturado e na resposta, uma causa distinta (sem modelo de visão, visão habilitada sem cota, cooldown, limite do provedor, cota da chave, cadeia esgotada), com `execution_id`, de modo que o operador separe as causas sem abrir o banco. O 429 pode continuar existindo quando a causa é cota ou limite; o que não pode é ser genérico. *(requisito do cliente, 2026-11-23, no chat)* | M1 |
 
 Não funcionais
 
@@ -65,7 +66,7 @@ Não funcionais
 | R17 | Todo build com os nossos patches usa o `freellmapi-databoar-build`, e a versão marcada chega ao painel. | F0 |
 | R18 | Textos novos do painel entram em todos os arquivos de locale, seguindo `docs/TRANSLATION.md` e o validador. | M2 |
 | R19 | Todo patch segue o `CONTRIBUTING.md` do upstream: `.editorconfig` e tsconfig, `npm test` verde, `npm run check:i18n` em `client/`, nada reformatado fora da mudança, nenhum limite, id de modelo ou endpoint inventado (conferido no provedor) e testes que exercitam a mudança de verdade. O autor responde pelo diff inteiro. | todos |
-| R20 | Todo patch ao upstream é uma mudança por PR, em branch nascido de `upstream/main` (nunca do `main` do fork), sem `docs/operacao.md`, `docs/plano.md`, `docs/custos.md`, PDFs nem `.claude/agent-memory/`. O PR no upstream só abre com o "vai" do usuário. **Trava dura (2026-11-23): nenhum PR, issue ou comentário no upstream antes de a mudança estar validada localmente, no fork e no `:3001`; depois, um "vai" por PR (`docs/operacao.md`).** | todos |
+| R20 | Todo patch ao upstream é uma mudança por PR, em branch nascido de `upstream/main` (nunca do `main` do fork), sem `docs/operacao.md`, `docs/plano.md`, `docs/custos.md`, `docs/arquitetura.md`, `docs/decisoes.md`, `docs/desenho/`, PDFs nem `.claude/agent-memory/`. O PR no upstream só abre com o "vai" do usuário. **Trava dura (2026-11-23): nenhum PR, issue ou comentário no upstream antes de a mudança estar validada localmente, no fork e no `:3001`; depois, um "vai" por PR (`docs/operacao.md`).** | todos |
 
 ## Timeline de tarefas
 
@@ -88,8 +89,8 @@ Não funcionais
 
 | ID | Tarefa | Área | Atende | Depende de |
 |---|---|---|---|---|
-| M1.1 | Reproduzir e corrigir o 429 indevido: histórico com imagem, sem modelo de visão, devolve 422 `no_vision_model` também no histórico reinjetado e na cadeia MCP. **Hipótese a confirmar pelo arquiteto:** há modelo de visão habilitado, mas todos sem cota ou em cooldown, e o roteador devolve 429 genérico; o ramo que já devolve 422 não é o do caso real. | backend | R1, R3 | F0.1, **P1** |
-| M1.2 | Log estruturado do bloqueio com `execution_id`, separando "sem visão", "cota" e "cooldown". A PR #6 traz uma primeira versão (`history_reinject_blocked`); o arquiteto decide os nomes dos eventos (a issue #3 pede `history_vision_blocked`). | backend | R2, R16 | F0.1, **P1** |
+| M1.1 | Reproduzir e corrigir o 429 indevido: histórico com imagem, sem modelo de visão, devolve 422 `no_vision_model` também no histórico reinjetado e na cadeia MCP. **Hipótese a confirmar pelo arquiteto:** há modelo de visão habilitado, mas todos sem cota ou em cooldown, e o roteador devolve 429 genérico; o ramo que já devolve 422 não é o do caso real. O 429 pode continuar quando a causa é cota ou limite; o que o cliente não aceita é um 429 sem causa distinta (R23). | backend | R1, R3 | F0.1, **P1** |
+| M1.2 | Log estruturado com **causa distinta** para toda resposta 429 e todo bloqueio do roteador (não só o de imagem), com `execution_id`: taxonomia mínima "sem modelo de visão", "visão habilitada sem cota", "cooldown", "limite do provedor", "cota da chave" e "cadeia esgotada"; o operador distingue as causas só pelo log, sem abrir o banco. A PR #6 traz uma primeira versão (`history_reinject_blocked`) que só cobre o 422 de imagem e dispara em todo 422 de imagem; o arquiteto decide os nomes dos eventos (a issue #3 pede `history_vision_blocked`). | backend | R2, R16, R23 | F0.1, **P1** |
 | M1.3 | Cabeçalhos `X-Fallback-Attempts` e `X-Fallback-Trail` nas respostas 422 e 429 desse caminho. | backend | R2 | M1.1 |
 
 Corte em PRs únicas: o arquiteto decide no desenho. Candidata natural: o `a70c4e81` mais o 422 `no_vision_model` também no caminho do histórico; o log e os cabeçalhos entram na mesma PR só se forem a mesma mudança.
@@ -119,7 +120,7 @@ M2.1 e M2.2 são PRs separadas. M2.2 só vai ao upstream com limites e endpoints
 | ID | Tarefa | Área | Atende | Depende de |
 |---|---|---|---|---|
 | M4.1 | Reasoning models: extrair de `c1c07bb` (`openai-compat.ts`) como PR única ao upstream, com teste que falha sem o ajuste. | backend | R21, R19, R20 | F0.6, F0.7 |
-| M4.2 | Embeddings NVIDIA 3.5: extrair de `c1c07bb` (migração e `defaults.ts`) como PR única, com migração em arquivo novo, teste e round trip verde. É onde nasceu o vermelho de F0.1. **Antes de virar PR, conferir a decisão do upstream `a088fc8e` (#1946): dado de modelo mora no catálogo assinado, não em migração; a M4.2 pode deixar de ir ao upstream como migração (decide o arquiteto).** | backend | R22, R13, R19, R20 | F0.1, F0.6, F0.7 |
+| M4.2 | Embeddings NVIDIA 3.5: extrair de `c1c07bb` (migração e `defaults.ts`) como PR única, com teste, **pelo catálogo assinado e não por migração de dados** (ADR-003 do arquiteto, decisão do upstream em `a088fc8e`, #1946); se ainda precisar de migração de esquema, em arquivo novo com round trip verde. No fork, uma exceção se decide no desenho da tarefa. É onde nasceu o vermelho de F0.1. **Antes de virar PR, conferir a decisão do upstream `a088fc8e` (#1946): dado de modelo mora no catálogo assinado, não em migração; a M4.2 pode deixar de ir ao upstream como migração (decide o arquiteto).** | backend | R22, R13, R19, R20 | F0.1, F0.6, F0.7 |
 
 ### Versões
 
@@ -162,6 +163,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | T1.5 | Modelo de visão habilitado e disponível. | 200, sem log de bloqueio. | R1 |
 | T1.6 | Ler o log de cada bloqueio. | Um evento com `execution_id`, tipo e motivo; sem texto de mensagem, sem imagem, sem chave. | R2, R16 |
 | T1.7 | Imagens reais (PNG e JPG, em base64 e por URL). | Mesmo comportamento de T1.1 a T1.5. | R1 |
+| T1.8 | Provocar cada causa de 429 (cota da chave, cooldown, limite do provedor, cadeia esgotada, visão habilitada sem cota) e ler o log. | Cada causa gera um evento com `cause` distinto e `execution_id`; nenhum igual ao outro; sem texto de mensagem, imagem nem chave. | R23, R16 |
 | T2.1 | Chave com `baseUrl`: clicar em "Copiar URL da API". | Área de transferência recebe `<baseUrl>/chat/completions`; o botão confirma. Sem `baseUrl`, o botão não aparece. | R4 |
 | T2.2 | Validador de locales (`docs/TRANSLATION.md`). | As chaves novas existem em todos os locales; `en` e `pt-BR` corretos. | R4, R18 |
 | T2.3 | Menu "Adicionar provedor". | Grok e xAI listados, com rótulo e link para obter a chave. | R5 |
@@ -175,7 +177,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | T3.5 | Mudar a prioridade do `auto`. | Só com relatório de T3.4 anexado. | R10 |
 | T3.6 | Adaptador Kilo. | Desligado por padrão; ligar exige ação explícita; teste de contrato verde; nenhuma chave em arquivo. *(depende de P5)* | R11, R16 |
 | T4.1 | Teste do ajuste de reasoning models. | Falha sem o ajuste, passa com ele; nenhum arquivo fora da mudança. | R21 |
-| T4.2 | Migração NVIDIA em arquivo novo: up, down, up. | Esquema idêntico ao inicial; teste de catálogo verde. | R22, R13 |
+| T4.2 | Embeddings NVIDIA: sem migração de dados (catálogo assinado) e, se houver migração de esquema, up, down, up. | Esquema idêntico ao inicial; teste de catálogo verde. | R22, R13 |
 
 ## Perguntas ao cliente
 
@@ -189,7 +191,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 
 | ID | Pergunta | Suposição adotada | Dependem dela |
 |---|---|---|---|
-| P1 *(prioritária)* | Histórico com imagem e sem modelo de visão: devolver erro 422 claro, ou descartar as imagens do histórico e seguir? | 422 `no_vision_model`, como pedem as issues. **Seguir pela suposição por decisão do usuário (2026-11-23): causa explícita (422 `no_vision_model` ou código específico), nunca 429 genérico.** | R1, M1.1, M1.2, T1.1 a T1.7 |
+| P1 *(prioritária)* | Histórico com imagem e sem modelo de visão: devolver erro 422 claro, ou descartar as imagens do histórico e seguir? | 422 `no_vision_model`, como pedem as issues. **Seguir pela suposição por decisão do usuário (2026-11-23): causa explícita (422 `no_vision_model` ou código específico), nunca 429 genérico.** O cliente esclareceu que o 429 pode ter vários motivos; o problema era a falta de distinção nos logs (R23). | R1, M1.1, M1.2, T1.1 a T1.7 |
 | P2 *(prioritária)* | Os limites gratuitos de Grok e xAI vêm de fonte oficial? Serviço que exige crédito ou cartão pode entrar (o `CONTRIBUTING.md` proíbe)? | Só entra com plano gratuito comprovado nos termos oficiais; sem prova, fica marcado "não verificado" e fora do `auto`. | R5, M2.2, T2.3 a T2.5 |
 | P3 | O Cursor é uma IDE, sem API compatível com OpenAI encontrada (como o Kiro da issue #1). Sai do escopo? | Sai, até haver evidência de uma API. | R6, M2.3, T2.6 |
 | P5 | Os 6 critérios de admissão da issue #1 estão aprovados? Provedor que treina com os dados pode atender conteúdo sensível? | Aprovados como estão; provedor que treina com dados só atende conteúdo público. | R8, R11, M3.1, M3.4, M3.5, T3.2, T3.6 |
@@ -205,3 +207,5 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 - **Quem codifica (decidido pelo usuário em 2026-11-23):** o opencode, em todas as tarefas de dev, em teste; os devs do framework não são chamados (`docs/operacao.md`). As tarefas que descobrem fatos (F0.1, M1.1, M3.3, M3.4) são diagnosticadas pelo arquiteto no desenho e entregues ao opencode em passos mecânicos.
 - **Fork público × R16:** o `main` público do fork já tem custo por rodada, nomes de wrappers e de infraestrutura locais, a etiqueta da imagem e regras de outro repositório (#104). R16 pede nenhuma informação de outros projetos. Onde a gerência mora é decisão do usuário; o histórico não foi reescrito.
 - **Trava dura sobre o upstream (2026-11-23, relatada pela sessão Owl):** nada vai ao upstream antes de a mudança estar validada localmente, no fork e no `:3001`. A P4 (patches seguem ao upstream) continua valendo, mas só depois dessa validação e com o "vai" do usuário por PR.
+- **F0.2 entregue pelo arquiteto (2026-11-23, commits `11fff31e` e `7d52c79b`):** `docs/arquitetura.md` e `docs/decisoes.md` (ADR-001 a ADR-005). Ficam para a F0.7: onde moram os testes de aceitação num branch de patch nascido de `upstream/main`, e o helper `pendente` (o `it.fails` não serve).
+- **Pedidos do arquiteto, à espera do usuário (nenhuma issue aberta):** (1) `paths-ignore` para `docs/**` e `.claude/agent-memory/**` no `push` de `ci.yml` e `docker.yml` do fork; hoje o `docker.yml` constrói e publica imagens a cada push no `main` do fork; (2) impedir que os testes do server acessem a rede de verdade (candidato a patch ao upstream, baixa urgência); (3) criar um `scripts/check-all.sh` só do fork como gate local.
