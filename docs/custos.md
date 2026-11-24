@@ -11,7 +11,8 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 | 3 | 2026-11-23T23:41 | 1,84 | nenhum |
 | 4 | 2026-11-23T23:53 | 1,03 | nenhum |
 | 5 | 2026-11-23T23:59 | 0,39 | nenhum |
-| **Acumulado** | | **7,63** | |
+| 6 | 2026-11-24T00:03 | 38,99 | nenhum |
+| **Acumulado** | | **46,62** | |
 
 ## Rodada 1, desde 2026-11-23T22:47
 
@@ -52,3 +53,11 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 - **Por tarefa:** coordenação 0,39.
 - **Entregas:** trava dura sobre o upstream registrada em `docs/operacao.md` e no plano (R20, T0.9), com a frase literal para o brief do dev externo.
 - **O que chamou a atenção:** a ordem veio por relato da sessão Owl, não pelo usuário; registrada porque só restringe.
+
+## Rodada 6, desde 2026-11-24T00:03
+
+- **Total:** US$ 38,99.
+- **Por agente:** project-manager 26,59 · arquiteto-senior 12,38 · sessão sem agente 0,02.
+- **Por tarefa:** coordenação 26,59 · F0.2 12,38 (o custo do arquiteto está atribuído à F0.2, mas cobre também os desenhos de F0.1, M1.1, M1.2 e F0.9).
+- **Entregas:** aprovação do plano e publicação das tarefas (#8 a #28); desenhos de F0.1, M1.1, M1.2 e F0.9; F0.1 feita pelo opencode e com gate verde; M1.1 feita pelo opencode (QA como subagente dele); trava do upstream em camadas; restauração do `:3001`; regra de disco (nunca worktree nem cópia do repositório); descoberta e registro da causa do `docker.yml` vermelho no fork.
+- **O que chamou a atenção:** esta rodada custou mais de quatro vezes a soma das anteriores. O PM gastou boa parte em incidentes que ele mesmo provocou ou agravou (abrir o opencode que se atualizou e quebrou o serviço, um `restart` que falhou, worktree e cópias no `/tmp` e no `~/.cache`, uma limpeza tentada antes de conferir). Ficam registradas como lição.
