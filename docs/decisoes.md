@@ -109,3 +109,58 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   CI. O gate local equivalente ao CI (um `scripts/check-all.sh` só do fork) depende de decisão do
   usuário (`docs/operacao.md`).
 - **Decidido por:** arquiteto-senior (F0.2).
+
+## ADR-006: Tirar a migração NVIDIA do fork, sem refazê-la
+
+- **Data:** 2026-11-23
+- **Status:** aceita
+- **Contexto:** a migração `20261122_000001_nvidia_3.5_embedding_catalogue.ts` (`c1c07bb`) deixa o
+  `main` vermelho (5 testes: ordem do registro, round trip duas vezes, `node:sqlite` e o nome no
+  backup). Ela só insere duas linhas em `embedding_models`, que é dado de modelo, e o catálogo
+  assinado já grava essa tabela (ADR-003). Nenhum banco durável a aplicou: a imagem do servidor local
+  tem 52 migrações, sem ela.
+- **Decisão:** remover o arquivo e as 3 linhas dele em `defaults.ts` (F0.1), sem renomear nem
+  refazer. Refazer a poria no banco real no próximo build e manteria dado de modelo em migração. As
+  outras partes do `c1c07bb` (reasoning models, corpo do 422) ficam para M4.1 e M1.1.
+- **Consequências:** o `main` volta a 52 migrações, igual ao servidor local. Um banco de dev que a
+  aplicou fica com um registro órfão (o `down` falha; remédio manual no desenho da F0.1). A M4.2
+  deixa de ser uma migração: o desenho dela decide o caminho, provavelmente o catálogo publicado
+  pelo upstream. O texto de R22 e T4.2 no plano precisa de revisão.
+- **Decidido por:** arquiteto-senior (desenho da F0.1). Conferido num worktree: suíte do server
+  verde (5.652 passaram, 6 pulados).
+
+## ADR-007: Taxonomia das causas de bloqueio, sem mudar status
+
+- **Data:** 2026-11-23
+- **Status:** aceita
+- **Contexto:** R23 (requisito do cliente) pede uma causa distinta em toda resposta 429 e em todo
+  bloqueio do roteador, na resposta e no log. Hoje o caso real (imagem, visão habilitada mas em
+  cooldown ou sem chave) sai como 429 `routing_exhausted` sem causa, e não há evento de log
+  estruturado. Mudar status quebraria clientes e testes do upstream.
+- **Decisão:** um módulo `server/src/lib/block-cause.ts` com as causas `no_vision_model`,
+  `no_vision_key`, `vision_quota_exhausted` (com `detail` = causa-base), `cooldown`, `provider_limit`,
+  `key_quota`, `chain_exhausted` e `gateway_rate_limit`, regras e precedência escritas no desenho da
+  M1.1. A visão vem de um parâmetro explícito (`requireVision`), não do texto do diagnóstico. A causa
+  vai no corpo (`error.cause`, `error.cause_detail`), nos cabeçalhos `X-Block-Cause` e
+  `X-Block-Cause-Detail` e no evento de log `route_blocked` (nível `warn`, com `execution_id`; nome
+  único em vez de `history_vision_blocked`, porque o bloqueio não depende de histórico). **Nenhum
+  status nem `code` existente muda**; só aparecem campos.
+- **Consequências:** M1.1 entrega a resposta e M1.2 o log, nessa ordem. Ficam de fora os 429 de
+  embeddings, mídia e fusion, e o `execution_id` do `inbound-chat`. Se o cliente quiser 422 para o
+  caso "visão habilitada sem chave", é uma mudança de status à parte.
+- **Decidido por:** arquiteto-senior (desenhos M1.1 e M1.2).
+
+## ADR-008: Onde ficam os testes de aceitação e o helper `pendente`
+
+- **Data:** 2026-11-23
+- **Status:** aceita (o fluxo de branch em si é da F0.7)
+- **Contexto:** o ADR-004 deixou para o primeiro desenho com aceitação dizer onde ficam os testes do
+  QA, já que o branch de patch nasce de `upstream/main` e vai ao upstream.
+- **Decisão:** os testes de aceitação ficam no próprio branch de patch, junto dos de rota, como
+  `server/src/__tests__/routes/<tema>.acceptance.test.ts` (o `include` do vitest já os pega). O
+  helper fica em `server/src/__tests__/helpers/pendente.ts`. O commit do QA é o primeiro do branch;
+  o dev troca `pendente(` por `it(` ao implementar e, no último commit, apaga o helper se nenhum
+  arquivo o usar. Ao upstream vão testes comuns, sem marca nem helper.
+- **Consequências:** como o commit do QA entra no branch (PR para o branch de patch ou commit do PM)
+  é decisão da F0.7.
+- **Decidido por:** arquiteto-senior (desenho da M1.1).
