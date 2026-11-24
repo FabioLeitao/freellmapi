@@ -94,8 +94,10 @@ Não funcionais
 | ID | Tarefa | Área | Atende | Depende de |
 |---|---|---|---|---|
 | M1.1 | Reproduzir e corrigir o 429 indevido: histórico com imagem, sem modelo de visão, devolve 422 `no_vision_model` também no histórico reinjetado e na cadeia MCP. **Hipótese a confirmar pelo arquiteto:** há modelo de visão habilitado, mas todos sem cota ou em cooldown, e o roteador devolve 429 genérico; o ramo que já devolve 422 não é o do caso real. O 429 pode continuar quando a causa é cota ou limite; o que o cliente não aceita é um 429 sem causa distinta (R23). | backend | R1, R3 | F0.1, **P1** |
-| M1.2 | Log estruturado com **causa distinta** para toda resposta 429 e todo bloqueio do roteador (não só o de imagem), com `execution_id`: taxonomia mínima "sem modelo de visão", "visão habilitada sem cota", "cooldown", "limite do provedor", "cota da chave" e "cadeia esgotada"; o operador distingue as causas só pelo log, sem abrir o banco. A PR #6 traz uma primeira versão (`history_reinject_blocked`) que só cobre o 422 de imagem e dispara em todo 422 de imagem; o arquiteto decide os nomes dos eventos (a issue #3 pede `history_vision_blocked`). | backend | R2, R16, R23 | F0.1, **P1** |
-| M1.3 | Cabeçalhos `X-Fallback-Attempts` e `X-Fallback-Trail` nas respostas 422 e 429 desse caminho. | backend | R2 | M1.1 |
+| M1.2 | Log estruturado com **causa distinta** para toda resposta 429 e todo bloqueio do roteador (não só o de imagem), com `execution_id`: taxonomia mínima "sem modelo de visão", "visão habilitada sem cota", "cooldown", "limite do provedor", "cota da chave" e "cadeia esgotada"; o operador distingue as causas só pelo log, sem abrir o banco. A PR #6 traz uma primeira versão (`history_reinject_blocked`) que só cobre o 422 de imagem e dispara em todo 422 de imagem; o arquiteto decide os nomes dos eventos (a issue #3 pede `history_vision_blocked`). | backend | R2, R16, R23 | F0.1, M1.1, **P1** |
+| M1.3 | Levar `X-Fallback-Attempts` e `X-Fallback-Trail` ao 422 (no 429 já existem, por `setFallbackHeaders`; no 422 são zero tentativas). Encolheu depois do desenho do arquiteto (2026-11-23). | backend | R2 | M1.1 |
+| M1.4 | Estender a causa distinta (R23) aos 429 de embeddings, mídia e fusion, reaproveitando a taxonomia e o `annotateBlock` da M1.1. *(pedida pelo arquiteto-senior no desenho da M1.1, 2026-11-23)* | backend | R23 | M1.1 |
+| M1.5 | Levar o `execution_id` ao `inbound-chat` (entradas Gemini e Ollama), movendo `getRequestGroupId` para `lib/`. *(pedida pelo arquiteto-senior no desenho da M1.2, 2026-11-23)* | backend | R2, R23 | M1.2 |
 
 Corte em PRs únicas: o arquiteto decide no desenho. Candidata natural: o `a70c4e81` mais o 422 `no_vision_model` também no caminho do histórico; o log e os cabeçalhos entram na mesma PR só se forem a mesma mudança.
 
@@ -124,7 +126,7 @@ M2.1 e M2.2 são PRs separadas. M2.2 só vai ao upstream com limites e endpoints
 | ID | Tarefa | Área | Atende | Depende de |
 |---|---|---|---|---|
 | M4.1 | Reasoning models: extrair de `c1c07bb` (`openai-compat.ts`) como PR única ao upstream, com teste que falha sem o ajuste. | backend | R21, R19, R20 | F0.6, F0.7 |
-| M4.2 | Embeddings NVIDIA 3.5: extrair de `c1c07bb` (migração e `defaults.ts`) como PR única, com teste, **pelo catálogo assinado e não por migração de dados** (ADR-003 do arquiteto, decisão do upstream em `a088fc8e`, #1946); se ainda precisar de migração de esquema, em arquivo novo com round trip verde. No fork, uma exceção se decide no desenho da tarefa. É onde nasceu o vermelho de F0.1. **Antes de virar PR, conferir a decisão do upstream `a088fc8e` (#1946): dado de modelo mora no catálogo assinado, não em migração; a M4.2 pode deixar de ir ao upstream como migração (decide o arquiteto).** | backend | R22, R13, R19, R20 | F0.1, F0.6, F0.7 |
+| M4.2 | Embeddings NVIDIA 3.5: **deixou de ser migração** (ADR-006: a F0.1 tira a migração local; ADR-003: dado de modelo vai pelo catálogo assinado). O desenho decide o caminho: ver se o catálogo do upstream já traz os modelos e, se não, propor ao mantenedor, sem migração. | backend | R22, R19, R20 | F0.1, F0.6, F0.7 |
 
 ### Versões
 
@@ -145,7 +147,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | #5 | **M2.2**, reaberta em 2026-11-23 (estava fechada como "completed" por engano: o commit do Grok/xAI nunca chegou ao `main`); adiada até a P2 |
 | PR #6 | não segue como está; é substituída por F0.8 (fechar com o motivo quando as mudanças únicas tiverem PR) |
 
-**Tarefa → issue (publicadas em 2026-11-23; última sincronização 2026-11-23):** F0.1 #8, F0.2 #9, F0.3 #10, F0.5 #11, F0.6 #12, F0.7 #13, F0.8 #14, M1.1 #3, M1.2 #4, M1.3 #15, M2.1 #16, M2.2 #5, M2.3 #17, M3.1 #18, M3.2 #19, M3.3 #20, M3.4 #21, M3.5 #22, M4.1 #23, M4.2 #24, F0.9 #25, F0.10 #26. F0.4 foi riscada e nunca teve issue (o ID não volta). A #7 é a issue de registro; a #1 é o guarda-chuva de M3.
+**Tarefa → issue (publicadas em 2026-11-23; última sincronização 2026-11-23):** F0.1 #8, F0.2 #9, F0.3 #10, F0.5 #11, F0.6 #12, F0.7 #13, F0.8 #14, M1.1 #3, M1.2 #4, M1.3 #15, M2.1 #16, M2.2 #5, M2.3 #17, M3.1 #18, M3.2 #19, M3.3 #20, M3.4 #21, M3.5 #22, M4.1 #23, M4.2 #24, F0.9 #25, F0.10 #26, M1.4 #27, M1.5 #28. F0.4 foi riscada e nunca teve issue (o ID não volta). A #7 é a issue de registro; a #1 é o guarda-chuva de M3.
 
 ## Testes (para o QA)
 
@@ -163,13 +165,15 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | T0.10 | Commit só com `docs/` e `.claude/agent-memory/**` num branch de teste do fork, depois um commit que altera `server/src/**`. | O primeiro não dispara `ci.yml` nem `docker.yml`; o segundo dispara os dois. | R24 |
 | T0.11 | Rodar `scripts/check-all.sh` no SHA candidato com o `:3001` no ar; depois quebrar um teste de propósito e rodar de novo. | Saída 0 com tudo verde e diferente de 0 com o teste quebrado; o `:3001` e o `freeapi.db` real não mudam. | R25, R12 |
 | T1.1 | Imagem no histórico, nenhum modelo de visão habilitado. | 422 `code: no_vision_model`, `X-Vision-Model-Available: false`, `X-Fallback-Attempts`, `X-Fallback-Trail`, todos como cabeçalhos HTTP de verdade (hoje os dois do `a70c4e8` são chaves do corpo JSON). | R1, R2 |
-| T1.2 | O mesmo, com histórico reinjetado pelo handoff de memória. | 422, não 429. *(depende de P1)* | R1, R3 |
-| T1.3 | O mesmo, pela cadeia MCP. | 422, não 429. | R3 |
+| T1.2 | Histórico reinjetado por handoff (só texto) e `ask` do MCP (só prompt em string): provocar o bloqueio por cooldown. | Nenhum 429 sem `cause`; a premissa de que nenhum dos dois leva imagem foi verificada pelo arquiteto (2026-11-23). | R1, R3 |
+| T1.3 | Caso E do desenho: imagem com visão habilitada, mas sem chave para nenhum modelo de visão. | 429 com `cause: no_vision_key` e `X-Block-Cause` *(depende de P9)*. | R3, R23 |
 | T1.4 | Modelo de visão habilitado, mas em cooldown ou sem cota. | 429, com cabeçalhos que dizem cota ou cooldown, distinguível do caso T1.1. | R2 |
 | T1.5 | Modelo de visão habilitado e disponível. | 200, sem log de bloqueio. | R1 |
 | T1.6 | Ler o log de cada bloqueio. | Um evento com `execution_id`, tipo e motivo; sem texto de mensagem, sem imagem, sem chave. | R2, R16 |
 | T1.7 | Imagens reais (PNG e JPG, em base64 e por URL). | Mesmo comportamento de T1.1 a T1.5. | R1 |
 | T1.8 | Provocar cada causa de 429 (cota da chave, cooldown, limite do provedor, cadeia esgotada, visão habilitada sem cota) e ler o log. | Cada causa gera um evento com `cause` distinto e `execution_id`; nenhum igual ao outro; sem texto de mensagem, imagem nem chave. | R23, R16 |
+| T1.9 | Provocar 429 em embeddings, mídia e fusion. | Causa distinta, na mesma taxonomia da M1.1. | R23 |
+| T1.10 | Chamar a entrada Gemini e a Ollama (`inbound-chat`) e ler o log. | Cada requisição traz `execution_id`. | R2 |
 | T2.1 | Chave com `baseUrl`: clicar em "Copiar URL da API". | Área de transferência recebe `<baseUrl>/chat/completions`; o botão confirma. Sem `baseUrl`, o botão não aparece. | R4 |
 | T2.2 | Validador de locales (`docs/TRANSLATION.md`). | As chaves novas existem em todos os locales; `en` e `pt-BR` corretos. | R4, R18 |
 | T2.3 | Menu "Adicionar provedor". | Grok e xAI listados, com rótulo e link para obter a chave. | R5 |
@@ -204,6 +208,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | P6 | Preencher `served_model` com o modelo que o provedor informar? | Sim; sem informação do provedor, fica vazio e o provedor é marcado como "opaco". | R9, M3.3, T3.3 |
 | P7 | A medição comparativa pode gastar a cota gratuita dos provedores? Quanto? | Até 200 requisições por modelo, só em planos gratuitos. | R10, M3.4, T3.4 |
 | P8 | Todo patch local deve ir ao upstream, ou parte fica só no fork? O upstream exige limite e id de modelo conferidos no provedor, nada pago e um teste real. | Só vai ao upstream o que tiver teste, fonte oficial e cumprir o `CONTRIBUTING.md`; o que não puder (por exemplo Grok e xAI sem prova de plano gratuito) fica só no fork, por PR no fork. | R19, R20, M2.2, M4, T0.7, T0.8 |
+| P9 | No caso "visão habilitada, mas sem chave para nenhum modelo de visão": manter o 429 com a causa `no_vision_key` ou virar 422? | Manter o 429, com a causa `no_vision_key`. | M1.1, M1.2, T1.3 |
 
 
 ## Observações do PM
@@ -216,3 +221,4 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 - **F0.2 entregue pelo arquiteto (2026-11-23, commits `11fff31e` e `7d52c79b`):** `docs/arquitetura.md` e `docs/decisoes.md` (ADR-001 a ADR-005). Ficam para a F0.7: onde moram os testes de aceitação num branch de patch nascido de `upstream/main`, e o helper `pendente` (o `it.fails` não serve).
 - **Pedidos do arquiteto, à espera do usuário (nenhuma issue aberta):** (1) `paths-ignore` para `docs/**` e `.claude/agent-memory/**` no `push` de `ci.yml` e `docker.yml` do fork; hoje o `docker.yml` constrói e publica imagens a cada push no `main` do fork; (2) impedir que os testes do server acessem a rede de verdade (candidato a patch ao upstream, baixa urgência); (3) criar um `scripts/check-all.sh` só do fork como gate local.
 - **Decisão do usuário (2026-11-23):** os itens (1) e (3) dos pedidos do arquiteto viram F0.9 e F0.10 ("é pra fazer"). O item (2), testes sem rede, segue sem decisão. Em pergunta do usuário sobre paravirtualização: o projeto roda nativo (Node 20.18 a 24; confirmado no host); o `:3001` é um contêiner podman; por isso o gate usa o Node do host e tem modo opcional em podman.
+- **Desenhos entregues (2026-11-23):** F0.1, M1.1 e M1.2 em `docs/desenho/`, e ADR-006 a ADR-008. Diagnóstico do 429 confirmado rodando: com os modelos de visão em cooldown, o roteador devolve 429 `routing_exhausted` sem causa (caso B), e com visão habilitada sem chave o resultado é o mesmo (caso E). **Ordem decidida:** F0.1 (opencode) → F0.6 (sync por PR, `merge-green`) → testes do QA e dev de M1.1 e M1.2, com base `upstream/main`. O pedido (2) do arquiteto, testes sem rede, volta com evidência (no teste descartável dele, uma chave `groq` sem cooldown fez uma chamada real ao provedor); segue sem decisão do usuário.
