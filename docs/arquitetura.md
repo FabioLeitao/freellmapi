@@ -71,10 +71,12 @@ Um provedor novo toca, no mínimo:
    Adaptador próprio estende `BaseProvider` (`chatCompletion`, `streamChatCompletion`, `validateKey`)
    e também é registrado em `index.ts`.
 3. `server/src/routes/keys.ts`: o id na lista `PLATFORMS` (o `z.enum` que aceita a chave).
-4. `server/src/lib/key-parser.ts`: o nome da variável de ambiente, para a importação de `.env`.
-5. `client/src/components/keys/shared.tsx` (rótulo e link para obter a chave) e
-   `client/src/lib/routing.ts`.
-6. `server/src/services/provider-quota.ts`, quando o provedor tem cota própria.
+4. `server/src/lib/key-parser.ts`: os prefixos de variável de ambiente e os apelidos de host que
+   levam ao id, para a importação de `.env`.
+5. `client/src/components/keys/shared.tsx` (rótulo e link para obter a chave, no menu
+   "Adicionar provedor") e `client/src/lib/routing.ts` (a cor do provedor).
+6. `server/src/services/provider-quota.ts`, quando o provedor tem um balde de cota próprio
+   (ex.: `zro::daily-free`).
 7. Teste em `server/src/__tests__/providers/<id>.test.ts`, com `fetch` simulado, e
    `server/src/__tests__/routes/keys-providers-checklist.test.ts` quando o checklist muda.
 8. Documentação: `docs/en/providers/01-supported-platforms.md` (e a de `zh-cn`) e, se houver,
@@ -85,7 +87,9 @@ upstream. Um provedor que só o fork quer não tem como pôr modelos no catálog
 tarefa (M2.2, M3.5) decide entre levar o adaptador ao upstream (e o mantenedor publica os modelos) ou
 usar um endpoint personalizado do painel, sem código.
 
-Limite, id de modelo e endpoint **só com fonte oficial conferida** no provedor (`CONTRIBUTING.md`).
+Limite, id de modelo e endpoint **só com fonte oficial conferida** no provedor, e **nenhum serviço
+pago ou que peça cartão** para começar (`CONTRIBUTING.md`, R14). Os commits de referência não
+tocaram locales; se o provedor trouxer texto novo no painel, vale a seção i18n.
 
 ## Migrações (ADR-002)
 
@@ -101,7 +105,9 @@ Limite, id de modelo e endpoint **só com fonte oficial conferida** no provedor 
   confere o round trip (up, down até a base, up) e compara esquema e linhas.
 - `up(db)` e `down(db)` obrigatórios. `down` reverte de verdade; se não der, lança
   `irreversible migration: <motivo>` e o desenho justifica. Os parâmetros SQL têm de valer nos dois
-  drivers (`better-sqlite3` e `node:sqlite`).
+  drivers: o padrão é `better-sqlite3`, o `node:sqlite` é escolhido no Android
+  (`defaultDbFactory` em `db/index.ts`), e `__tests__/db/node-sqlite.test.ts` aplica todas as
+  migrações por ele (foi onde a migração NVIDIA falhou com `Unknown named parameter '0'`).
 - **Migração aplicada nunca é editada.** Correção é uma migração nova.
 - Migração serve para esquema, regras de família, encanamento de provedor e correção de sementes de
   quirks. **Dado de modelo** (modelos, limites, ranks) **não** (ADR-003).
@@ -147,6 +153,12 @@ Limite, id de modelo e endpoint **só com fonte oficial conferida** no provedor 
   causa conhecida tem `code` próprio (ex.: `no_vision_model`, `request_too_large`). Cabeçalho é
   cabeçalho HTTP; não ponha no corpo um campo com nome de cabeçalho.
 - **Entrada:** validada com zod na rota.
+- **Transações:** `db.transaction(() => …)` (API do `better-sqlite3`, reproduzida pelo adaptador do
+  `node:sqlite`). Cada migração roda numa transação (`migrate/runner.ts`) e o catálogo é aplicado
+  numa só (`catalog-sync.ts`). Escrita em mais de uma tabela vai numa transação.
+- **Dinheiro:** o produto não cobra. O único valor em dinheiro é o preço equivalente pago, em USD por
+  milhão de tokens (`db/model-pricing.ts`), só para analytics. Cotas e orçamentos são contagens
+  inteiras de tokens e de requisições (`lib/budget.ts`, colunas `*_cap INTEGER`).
 - **Data e hora:** UTC. As janelas diárias de cota zeram à meia-noite UTC
   (`services/ratelimit.ts`); horários gravados em UTC (`datetime('now')` do SQLite ou `toISOString()`).
 - **Identificadores:** inteiros autoincrementais do SQLite; o id de provedor é o `Platform`.
@@ -282,8 +294,8 @@ divergência do fork: vira pedido de tarefa com o motivo, e só vai ao upstream 
 
 ## Merge e fluxo de patch
 
-Definidos em `docs/operacao.md` e, quando a F0.7 sair, no ADR dela. Em resumo: PR no fork só por
-`merge-green`, sempre merge commit (nunca squash), para manter a ordem `test:` → `feat:` →
-`refactor:` visível; o PR de revisão de um patch não é mesclado no fork; no upstream quem mescla é o
-mantenedor. Branch de patch nasce de `upstream/main` e não leva arquivo só do fork (inclusive este
+O fluxo está em `docs/operacao.md` e, quando a F0.7 sair, no ADR dela: PR no fork só por
+`merge-green`; o PR de revisão de um patch não é mesclado no fork; no upstream quem mescla é o
+mantenedor. Política da base: merge commit, nunca squash, para manter visível a ordem `test:` →
+`feat:` → `refactor:`. **A confirmar** que o `merge-green` faz merge commit (não foi conferido). Branch de patch nasce de `upstream/main` e não leva arquivo só do fork (inclusive este
 documento, `docs/decisoes.md` e `docs/desenho/`).

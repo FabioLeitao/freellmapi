@@ -40,7 +40,8 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   `db:migration:create`, com nome `AAAAMMDD_HHMMSS_[a-z0-9_]+.ts`; registrado em
   `server/src/db/migrate/defaults.ts` na ordem dos nomes; com a constante do nome na lista do
   `roundtrip.test.ts`; com `up` e `down`, e `down` reversível (ou `irreversible migration: <motivo>`,
-  justificado no desenho); com SQL que vale nos dois drivers (`better-sqlite3` e `node:sqlite`).
+  justificado no desenho); com SQL que vale nos dois drivers (`better-sqlite3` e `node:sqlite`,
+  este conferido por `node-sqlite.test.ts`).
   Migração aplicada nunca é editada.
 - **Consequências:** todo desenho com mudança de modelo de dados traz a migração esperada e um teste
   `D` do round trip. A prova é `npm run test:migrations` e `npm test -w server`.
@@ -58,14 +59,17 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   pago. A V25 foi a última migração de dados de modelo. **O commit não está no `main` do fork**, e o
   `server/src/db/README.md` do fork ainda diz o contrário ("Built-in model catalog rows live in
   migrations"); a sincronização (F0.6) traz o texto novo.
-- **Decisão:** o fork adota a decisão do upstream desde já. Migração serve para esquema, regras de
-  família, encanamento de provedor e correção de sementes de quirks. Modelo novo, aposentado ou
-  corrigido é mudança no catálogo publicado, que só o upstream assina. Um provedor que só o fork quer
-  não tem modelos embutidos; o desenho da tarefa escolhe entre levar o adaptador ao upstream ou usar
-  um endpoint personalizado do painel.
+- **Decisão:** **em patch ao upstream, vale sem exceção:** migração serve para esquema, regras de
+  família, encanamento de provedor e correção de sementes de quirks; modelo novo, aposentado ou
+  corrigido é mudança no catálogo publicado, que só o upstream assina. **No fork, é a regra padrão;**
+  como o fork não assina catálogo, uma exceção só do fork (por exemplo, a F0.1 refazer a migração
+  NVIDIA em vez de revertê-la) é decidida no desenho da tarefa, com o motivo, e nunca vai ao
+  upstream. Um provedor que só o fork quer não tem modelos embutidos; o desenho escolhe entre levar
+  o adaptador ao upstream ou usar um endpoint personalizado do painel.
 - **Consequências:** afeta, sem decidir por elas, a F0.1 (a migração NVIDIA é dado de modelo), a
-  M4.2 (embeddings NVIDIA podem deixar de ir ao upstream como migração), a M2.2 (Grok e xAI) e a
-  M3.5 (Kilo). Cada desenho dessas tarefas cita este ADR e diz como trata os modelos.
+  M4.2 (embeddings NVIDIA provavelmente não vão ao upstream como migração; o texto de R22 e T4.2 no
+  plano ainda diz "migração em arquivo novo"), a M2.2 (Grok e xAI) e a M3.5 (Kilo). Cada desenho
+  dessas tarefas cita este ADR e diz como trata os modelos.
 - **Decidido por:** mantenedor do upstream (`a088fc8e`, #1946); registro no fork: arquiteto-senior
   (F0.2).
 
