@@ -25,3 +25,10 @@ metadata:
 **Regras que valem para tudo (usuário, em maiúsculas):** NUNCA worktree nem cópia ou clone do repositório (nem em `/tmp`, nem em `~/.cache`); tudo em BRANCH do clone canônico; commits de documentação meus: trocar o canônico para `main`, `git merge --ff-only origin/main`, commitar, `git push origin main`, voltar ao branch anterior; temporário só pequeno em `mktemp`, apagado por quem cria; antes de apagar, guardar no canônico e conferir ref por ref. Todo brief de dev externo e toda chamada a subagente leva as linhas de `docs/operacao.md` (upstream, sem worktree, `/tmp`). PR nunca draft; PR só com gate verde no SHA exato e "vai". Commits de documentação usam `[skip ci]` até a F0.9 entrar; nunca `[skip ci]` em commit de código.
 
 **Lições desta sessão (não repetir):** abrir a TUI de um harness sem conferir a versão; reiniciar contêiner com o inotify no limite; criar worktree ou cópia do repo fora do canônico; tentar apagar antes de conferir se havia trabalho único; subir um segundo agente sem perguntar; comando enorme com vários efeitos numa chamada só (uma operação por comando).
+
+**Atualização 2026-11-25 (ordem do usuário: sincronizar com o upstream, build e deploy local):**
+- Branch `integracao/up-7c9a3805` = `upstream/main` (`7c9a3805`) + M1.1 (cherry-pick de `89e956c4`, sem conflito) → `60b09c97`, no fork como branch de segurança (sem PR). Gate completo verde no SHA exato.
+- Zero classifier (`288bf0c6`) já absorvido pelo upstream; rótulo `zeroclassifier` trocado por `m1.1-blockcause` no `patch-labels.tsv` (backup `.bak-20261125`).
+- Fora: `c1c07bb4` (migração NVIDIA), `a70c4e81`/`6743af3a` (sobrepõem a M1.1), `373dce03`/`4633a595` (PR antigo não revisado).
+- **`:3001` agora roda `localhost/freellmapi:up-7c9a3805.databoar-60b09c97.m1.1-blockcause`** (4 migrações novas do upstream aplicadas). Rollback: `~/freellmapi/backup-pre-up-7c9a3805-20261125-153703` (compose + volume) e imagem `rollback-20261125-153703`.
+- M1.1 em produção local SEM as revisões (revisor/cyber/Hermes), por ordem do usuário; elas seguem pendentes. `main` do fork continua 12 atrás (F0.6).
