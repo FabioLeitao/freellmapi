@@ -181,3 +181,26 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   decidir publicar, a mudança é de 2 linhas e este ADR passa a ser substituído.
 - **Decidido por:** arquiteto-senior (desenho da F0.9), como padrão proposto pelo project-manager;
   a decisão final é do usuário.
+
+## ADR-010: `baseBlockCause` sem visão e linhas de chave classificadas por token
+
+- **Data:** 2026-11-25
+- **Status:** aceita (complementa o ADR-007, que não muda)
+- **Contexto:** a revisão do PR #31 (M1.1) achou duas falhas nas regras do desenho. (1) A regra
+  "ignorar sempre as linhas `no vision support`" contradizia o DM1.1-13, e o dev contornou com um
+  terceiro parâmetro `requireVision = true` em `baseBlockCause`, fora do contrato. (2) O regex de
+  configuração aplicado à linha inteira descartava uma linha mista (`cooldown:1, decrypt-error:1`);
+  rodando a implementação, um pedido com imagem e essa linha dava `no_vision_key`, embora houvesse
+  chave de visão em cooldown.
+- **Decisão:** `baseBlockCause(diag, attempts)` tem 2 parâmetros e trata `no vision support` como
+  qualquer filtro de capacidade (`other`, como o `classifyRoutingDiagLine`); só o `blockCause`, com
+  `requireVision`, tira essas linhas antes de chamar a base. As linhas `N key(s) — …` são
+  classificadas por token; uma delas só é de configuração quando todos os tokens são ignorados
+  (`already-failed-this-request`, `decrypt-error`, `custom-key-mismatch`, `no-resolved-provider`,
+  `no usable key`). Uma só definição de "linha de configuração" serve às duas funções.
+- **Consequências:** a visão continua vindo só do parâmetro (ADR-007). Numa linha mista a `cause`
+  fica mais fina que o `code`, que segue o classificador do upstream na linha inteira; o `code` e o
+  status não mudam. Testes novos DM1.1-26 a 29; DM1.1-1 a 25 mantêm o resultado esperado. A M1.2 só
+  usa os tipos e não muda.
+- **Decidido por:** arquiteto-senior (revisão 1 do desenho da M1.1), a partir das sugestões 1 e 2 da
+  revisão do PR #31.
