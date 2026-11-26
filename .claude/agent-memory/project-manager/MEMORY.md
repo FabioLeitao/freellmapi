@@ -2,3 +2,4 @@
 - [Fork, opencode e build](feedback_fork_opencode_build.md) — repo é o fork; dev externo opencode (nunca goose); build pelo wrapper databoar
 - [Nunca dev interno](feedback_nunca_dev_interno.md) — NUNCA backend/frontend-dev-senior do Claude Code; escalar dentro do opencode
 - [Tudo externo](feedback_tudo_externo.md) — todos os papéis em harness externo; subagente Claude só em último caso
+- [opencode /goal e @skill](feedback_opencode_goal_skill_ativacao.md) — ativar pelos seletores da TUI (Tab), nunca colar texto
