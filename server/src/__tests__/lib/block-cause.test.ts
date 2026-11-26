@@ -109,14 +109,26 @@ describe('blockCause', () => {
     expect(baseBlockCause(['g/x: 1 key(s) — cooldown:1', 'c/a: no vision support'], [])).toBe('chain_exhausted');
   });
 
-  it('DM1.1-28: blockCause requireVision, no attempts, vision + decrypt-error/custom-key-mismatch gives vision_quota_exhausted/detail cooldown', () => {
-    expect(blockCause({ status: 429, requireVision: true, diag: ['c/a: no vision support', 'g/x: 2 key(s) — decrypt-error:1, custom-key-mismatch:1'], attempts: [] })).toEqual({ cause: 'vision_quota_exhausted', detail: 'cooldown' });
+  it('DM1.1-28: blockCause requireVision, no attempts, mixed cooldown/decrypt-error line gives vision_quota_exhausted/detail cooldown', () => {
+    expect(blockCause({ status: 429, requireVision: true, diag: ['c/a: no vision support', 'g/x: 2 key(s) — cooldown:1, decrypt-error:1'], attempts: [] })).toEqual({ cause: 'vision_quota_exhausted', detail: 'cooldown' });
     expect(blockCause({ status: 429, requireVision: true, diag: ['c/a: no vision support', 'g/x: 2 key(s) — rpm/rpd-limit:1, no-resolved-provider:1', 'g/y: 1 key(s) — no usable key'], attempts: [] })).toEqual({ cause: 'vision_quota_exhausted', detail: 'key_quota' });
   });
 
   it('DM1.1-29: blockCause requireVision, no attempts, only ignored key tokens gives no_vision_key', () => {
     expect(blockCause({ status: 429, requireVision: true, diag: ['c/a: no vision support', 'g/x: 2 key(s) — decrypt-error:1, custom-key-mismatch:1', 'g/y: 1 key(s) — no usable key'], attempts: [] })).toEqual({ cause: 'no_vision_key' });
     expect(baseBlockCause(['g/a: 1 key(s) — no usable key', 'g/b: 1 key(s) — cooldown:1'], [])).toBe('cooldown');
+  });
+
+  // Desenho M1.1 rev.1 (ADR-010): linha de chave com todos os tokens ignorados é de
+  // configuração (linha 103); com requireVision, sem tentativas e só linhas noVision/config,
+  // a causa é no_vision_key (linha 127) — sem exigir uma linha "no usable key".
+  it('vision + key line whose tokens are all ignored is config → no_vision_key (design rev.1 lines 103, 127)', () => {
+    expect(blockCause({
+      status: 429,
+      requireVision: true,
+      diag: ['c/a: no vision support', 'g/x: 2 key(s) — decrypt-error:1, custom-key-mismatch:1'],
+      attempts: [],
+    })).toEqual({ cause: 'no_vision_key' });
   });
 });
 
