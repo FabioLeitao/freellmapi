@@ -51,6 +51,17 @@ describe('baseBlockCause', () => {
     expect(baseBlockCause([], [attempt('daily_quota_exhausted'), attempt('out_of_credits')])).toBe('key_quota');
     expect(baseBlockCause([], [attempt('rate_limited'), attempt('timeout')])).toBe('chain_exhausted');
   });
+
+  it('DM1.1-26: baseBlockCause with vision line and cooldown gives chain_exhausted (base treats vision as filter)', () => {
+    expect(baseBlockCause(['g/x: 1 key(s) — cooldown:1', 'c/a: no vision support'], [])).toBe('chain_exhausted');
+  });
+
+  it('DM1.1-27: mixed key tokens — cooldown counted, custom-key-mismatch ignored, mixed with other gives chain_exhausted', () => {
+    // All tokens ignored in first line → config only → chain_exhausted
+    expect(baseBlockCause(['g/x: 2 key(s) — cooldown:1, decrypt-error:1', 'g/y: 1 key(s) — cooldown:1'], [])).toBe('cooldown');
+    // Mixed families: cooldown from mixed line + key_quota from other line → chain_exhausted
+    expect(baseBlockCause(['g/x: 2 key(s) — cooldown:1, custom-key-mismatch:1', 'g/y: 1 key(s) — rpm/rpd-limit:1'], [])).toBe('chain_exhausted');
+  });
 });
 
 describe('blockCause', () => {
@@ -92,6 +103,20 @@ describe('blockCause', () => {
   it('DM1.1-13: no vision flag means no vision cause even with no-vision diag', () => {
     expect(blockCause({ status: 429, requireVision: false, diag: cooldownVisionDiag, attempts: [] }))
       .toEqual({ cause: 'chain_exhausted' });
+  });
+
+  it('DM1.1-26: baseBlockCause with vision line and cooldown gives chain_exhausted (2 params only)', () => {
+    expect(baseBlockCause(['g/x: 1 key(s) — cooldown:1', 'c/a: no vision support'], [])).toBe('chain_exhausted');
+  });
+
+  it('DM1.1-28: blockCause requireVision, no attempts, vision + decrypt-error/custom-key-mismatch gives vision_quota_exhausted/detail cooldown', () => {
+    expect(blockCause({ status: 429, requireVision: true, diag: ['c/a: no vision support', 'g/x: 2 key(s) — decrypt-error:1, custom-key-mismatch:1'], attempts: [] })).toEqual({ cause: 'vision_quota_exhausted', detail: 'cooldown' });
+    expect(blockCause({ status: 429, requireVision: true, diag: ['c/a: no vision support', 'g/x: 2 key(s) — rpm/rpd-limit:1, no-resolved-provider:1', 'g/y: 1 key(s) — no usable key'], attempts: [] })).toEqual({ cause: 'vision_quota_exhausted', detail: 'key_quota' });
+  });
+
+  it('DM1.1-29: blockCause requireVision, no attempts, only ignored key tokens gives no_vision_key', () => {
+    expect(blockCause({ status: 429, requireVision: true, diag: ['c/a: no vision support', 'g/x: 2 key(s) — decrypt-error:1, custom-key-mismatch:1', 'g/y: 1 key(s) — no usable key'], attempts: [] })).toEqual({ cause: 'no_vision_key' });
+    expect(baseBlockCause(['g/a: 1 key(s) — no usable key', 'g/b: 1 key(s) — cooldown:1'], [])).toBe('cooldown');
   });
 });
 
