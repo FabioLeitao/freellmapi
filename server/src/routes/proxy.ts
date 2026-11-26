@@ -2099,11 +2099,14 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   // heuristic above (text-only) can't see.
   const hasImage = messageHasImage(messages);
   if (hasImage && !hasEnabledVisionModel()) {
+    res.setHeader('X-Vision-Model-Available', 'false');
+    res.setHeader('X-Block-Cause', 'no_vision_model');
     res.status(422).json({
       error: {
         message: 'This request includes an image, but no vision-capable model is enabled. Enable a vision model (e.g. Gemini 2.5 Flash, Llama 4 Scout) in the Fallback Chain.',
         type: 'invalid_request_error',
         code: 'no_vision_model',
+        cause: 'no_vision_model',
       },
       execution_id: requestGroupId,
     });
@@ -2586,6 +2589,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
     maxRetries: MAX_RETRIES,
     state,
     attemptLog,
+    requireVision: hasImage,
     logIdentity: { surface: 'chat completions', requestId: requestGroupId, requestedModel: requestedModelLabel },
     clientGone: () => clientGone,
     abortInFlight: () => { hedgeAbort.abort(newHedgeAbortError()); hedgeAbort = new AbortController(); },
