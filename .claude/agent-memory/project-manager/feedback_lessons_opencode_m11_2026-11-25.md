@@ -23,6 +23,7 @@ Design: git show origin/main:./docs/desenho/<T>.md (read-only, no checkout).
 Steps: (1) failing test derived from the design, run it, show red; (2) fix the root cause, no special cases;
 (3) all task test files green. Run LSP diagnostics, lint and tsc before editing and before finishing.
 Touch only <files>. No install, no network, no commit, no push, never worktree.
-Use @test-driven-development @incremental-implementation @usar-lsp-e-linters
+Use @test-driven-development @incremental-implementation @usar-lsp-e-linters @usar-wrappers @token-aware-automation
 ```
+Receita do operador (via boar-pm, 25/nov): o `/goal` aponta para um briefing `.md` (texto curto na caixa, menos erro de digitação na TUI); em docs, `@linguistic-rigor-active-voice @documentation-en-pt-br @escrever-com-voz`. Free tier externo primeiro; fallback pago: Cursor, codex, agy, grok, Claude Code. Roteamento "smartest" do FreeLLMAPI ajudou (n=1). Detalhe: vault `lab-op/infra/dev-externo-ritual/README.pt_BR.md`.
 Ver [[feedback-opencode-goal-skill-ativacao]] e [[feedback-tudo-externo]].
