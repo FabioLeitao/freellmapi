@@ -32,3 +32,5 @@ metadata:
 - Fora: `c1c07bb4` (migração NVIDIA), `a70c4e81`/`6743af3a` (sobrepõem a M1.1), `373dce03`/`4633a595` (PR antigo não revisado).
 - **`:3001` agora roda `localhost/freellmapi:up-7c9a3805.databoar-60b09c97.m1.1-blockcause`** (4 migrações novas do upstream aplicadas). Rollback: `~/freellmapi/backup-pre-up-7c9a3805-20261125-153703` (compose + volume) e imagem `rollback-20261125-153703`.
 - M1.1 em produção local SEM as revisões (revisor/cyber/Hermes), por ordem do usuário; elas seguem pendentes. `main` do fork continua 12 atrás (F0.6).
+
+- **26/nov 00h:** PR #31 mesclado no fork (base `base/upstream-7c9a3805`, merge `f56e8450`). Upstream foi a `0d64e07b`; M1.1 reaplicada por cherry-pick em `integracao/up-0d64e07b` (`4c13375e`, sem conflito; gate verde). `:3001` roda `up-0d64e07b.databoar-4c13375e.m1.1-blockcause` (rollback `rollback-20261125-235700`). Rótulo `m1.1-blockcause` com os 11 caminhos reais. Envio ao upstream: só com o checklist (dogfood, código sem referência interna e em inglês, branch novo de upstream/main, vai do operador).
