@@ -5,3 +5,4 @@
 - [opencode /goal e @skill](feedback_opencode_goal_skill_ativacao.md) — ativar pelos seletores da TUI (Tab), nunca colar texto
 - [Lições opencode M1.1](feedback_lessons_opencode_m11_2026-11-25.md) — /goal pela TUI, desenho no main, verde≠certo, template de /goal
 - [Sem force push](feedback_sem_force_push.md) — operador odeia --force; PR/branch novo; force só com ordem explícita
+- [Escalada de modelos](feedback_escalada_modelos.md) — Auto FreeLLMAPI ~95%; depois free direto (Hy4/OpenRouter/NVIDIA); pagos só p/ sério
