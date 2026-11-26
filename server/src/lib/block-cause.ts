@@ -61,14 +61,10 @@ export function baseBlockCause(diag: readonly string[], attempts: readonly Attem
 
     // Key line: process each token after the "—"
     const tokens = match[2].split(', ');
-    let allTokensIgnored = true;
     for (const token of tokens) {
       const reason = REASON.exec(token)?.[1] ?? token;
       const family = reasonFamily(reason);
-      if (family) {
-        families.add(family);
-        allTokensIgnored = false;
-      }
+      if (family) families.add(family);
     }
     // If all tokens were ignored, the line is config-only (no families added).
     // If some tokens contributed families, those families are already in the set.
@@ -90,20 +86,6 @@ export function blockCause(input: {
   const diag = input.diag ?? [];
 
   const noVision = (line: string) => /no vision support/i.test(line.toLowerCase());
-
-  // Helper: check if a line matches the REASON_LINE pattern (is a key line)
-  const isKeyLine = (line: string): boolean => REASON_LINE.test(line);
-
-  // Helper: check if all key tokens in a line are ignored (no family produced)
-  const allKeyTokensIgnored = (line: string): boolean => {
-    const match = REASON_LINE.exec(line);
-    if (!match) return true; // not a key line → treat as config
-    for (const token of match[2].split(', ')) {
-      const reason = REASON.exec(token)?.[1] ?? token;
-      if (reasonFamily(reason)) return false; // found a non-ignored token
-    }
-    return true; // all tokens ignored
-  };
 
   // Helper: check if a line is "no usable key"
   const noUsableKeyLine = (line: string): boolean =>
