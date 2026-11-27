@@ -252,3 +252,21 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   por status/causa, não pela presença dos cabeçalhos. O desenho é compatível com as duas versões do
   contrato de `X-Block-Cause` no 422 que circulam no projeto.
 - **Decidido por:** arquiteto-senior (desenho da M1.3).
+
+## ADR-014: causa explícita nos 429 de embeddings, mídia e fusion
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** R23 cobre todo 429, mas os serviços de embeddings, mídia e fusion não passam pelo
+  `runFallbackLoop` e, por isso, não tinham `cause` nem evento `route_blocked`. As mensagens de erro
+  desses serviços são texto de operador e mudam com o upstream: classificá-las por regex daria causa
+  errada sem nenhum teste pegar.
+- **Decisão:** `annotateBlock` sai do closure de `runFallbackLoop` e vira função exportada, aceitando uma
+  causa já classificada (`result`). Cada erro (`EmbeddingsError`, `MediaError`, `FusionError`) ganha um
+  campo opcional `blockCause: BaseBlockCause`, escrito no ponto do `throw` que já conhece a família.
+  As rotas copiam para `error.cause`, escrevem `X-Block-Cause` com `setExhaustionHeaders` (sem mexer no
+  `Retry-After` já definido), acrescentam `execution_id` e emitem um `route_blocked` por resposta.
+- **Consequências:** nenhum status, `code` ou `Retry-After` muda; nenhuma mensagem é interpretada; a
+  dependência da issue #27 passa a incluir M1.2 para a parte do log. `/v1/search` e `/v1/rerank` ficam
+  de fora e precisam de pedido de tarefa se R23 os incluir.
+- **Decidido por:** arquiteto-senior (desenho da M1.4).
