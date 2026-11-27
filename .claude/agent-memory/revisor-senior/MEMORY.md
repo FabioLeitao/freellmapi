@@ -1,0 +1,1 @@
+- [Padrões de revisão do fork](padroes-revisao.md) — PR de patch sem CI, prontidão para o upstream, TDD do opencode
