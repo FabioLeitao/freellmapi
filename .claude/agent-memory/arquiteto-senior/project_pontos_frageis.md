@@ -21,3 +21,13 @@ Notados na base (F0.2, 2026-11-23):
 
 **Why:** cada item custaria uma revisão de desenho se descoberto pelo dev no meio da tarefa.
 **How to apply:** conferir esta lista antes de desenhar F0.1, M1.x, M2.2, M3.5, M4.2 e qualquer tarefa com aceitação.
+
+Notados ao desenhar F0.5, F0.10, M1.3, M1.4, M1.5 e M2.1 (2026-11-27):
+
+- **`upstream/main` já tem a PR #2118** (`lib/block-cause.ts`, `annotateBlock` local), com taxonomia menor que a do desenho M1.1/ADR-007 (sem `no_vision_model`, `no_vision_key`, `gateway_rate_limit`), e o `attemptFamily` dele mapeia `rate_limited` para `cooldown`, não `provider_limit`. Não desenhe como se o upstream cru fosse a base dos desenhos M1.x; diga qual base vale.
+- **`M2.1` já existe em parte no upstream**: botão "Copy base URL" em `provider-list.tsx` copia a URL do provedor com `setup.copyUrl`/`setup.copiedUrl` e tem teste; R4 pede a URL do gateway `<baseUrl>/chat/completions` com `keys.copyApiUrl`/`keys.copiedApiUrl`. São dois botões.
+- **Wrapper `freellmapi-databoar-build` compila o `--ref` de verdade** (`git archive "$REFSHA"`): a premissa antiga de que compilava o checkout atual vinha de versão sobrescrita. Tag canônica: `up-<sha8>.databoar-<sha8>[.rótulo]`, não `<tag>-<n>-g<sha>`.
+- **`module-purity.test.ts` tem lista `PURE_MODULES`:** módulo novo em `lib/` sem imports de valor (ex.: `request-group-id.ts`) tem de entrar nela ou a guarda falha. Não importar `node:crypto` nesses módulos.
+- **Clone é compartilhado com outros agentes:** outro agente trocou o branch do clone no meio de uma sessão e um commit de docs caiu no branch dele. Confira `git rev-parse --abbrev-ref HEAD` imediatamente antes de cada commit/push e restaure o branch se ele não for o seu; nunca force-push no `main`.
+
+**Why:** cada uma dessas premissas erradas custaria uma revisão de desenho ou um commit no branch errado.
