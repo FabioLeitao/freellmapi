@@ -270,3 +270,17 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   dependência da issue #27 passa a incluir M1.2 para a parte do log. `/v1/search` e `/v1/rerank` ficam
   de fora e precisam de pedido de tarefa se R23 os incluir.
 - **Decidido por:** arquiteto-senior (desenho da M1.4).
+
+## ADR-015: `execution_id` do inbound-chat vai no log e no cabeçalho
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** M1.2 deixou `execution_id=none` nas entradas Gemini e Ollama porque `getRequestGroupId`
+  estava em `routes/proxy.ts`, e importar uma rota dentro de `lib/inbound-chat.ts` só para isso aumentaria
+  o acoplamento. Os corpos desses protocolos são de terceiros.
+- **Decisão:** `getRequestGroupId` passa a morar em `lib/request-group-id.ts` (puro, listado em
+  `module-purity.test.ts`), com re-export em `proxy.ts` para compatibilidade. `runInboundChat` calcula o id
+  uma vez, grava em `logIdentity.requestId` e devolve em `X-Request-ID`. Corpos Gemini/Ollama não mudam.
+- **Consequências:** R2 e R23 fecham para essas superfícies sem quebrar clientes de protocolos
+  estranhos; cada requisição tem um id distinto, e o mesmo valor aparece no log e no cabeçalho.
+- **Decidido por:** arquiteto-senior (desenho da M1.5).
