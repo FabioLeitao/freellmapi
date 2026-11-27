@@ -237,3 +237,18 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
 - **Consequências:** o mesmo comando vale na máquina do operador e no SHA exato de qualquer PR; o PM cola
   a saída 0 no corpo do PR. Nenhum rigor é baixado para obter verde.
 - **Decidido por:** arquiteto-senior (desenho da F0.10), a pedido do usuário.
+
+## ADR-013: cabeçalhos de zero tentativas em erros 422/429
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** `setFallbackHeaders` só escreve `X-Fallback-Attempts` e `X-Fallback-Trail` quando há
+  tentativa falha; o 422 de visão e os 429 em que o roteador barrou antes do envio têm zero tentativas e
+  ficavam sem os dois cabeçalhos. Mudiar a condição global faria os cabeçalhos aparecerem em sucessos.
+- **Decisão:** helper separado `setZeroFallbackHeaders(res)`, chamado só em erros 422/429 com zero
+  tentativas (guardas de visão, saídas do loop e limitador do gateway). Valores: `0` e `''` (cabeçalho
+  presente, valor vazio). `setFallbackHeaders` e as respostas de sucesso não mudam.
+- **Consequências:** o 422 passa a ter os cabeçalhos que T1.1 pede; a distinção entre 422 e 429 continua
+  por status/causa, não pela presença dos cabeçalhos. O desenho é compatível com as duas versões do
+  contrato de `X-Block-Cause` no 422 que circulam no projeto.
+- **Decidido por:** arquiteto-senior (desenho da M1.3).
