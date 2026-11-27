@@ -12,7 +12,9 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/freellmapi
+  # ghcr.io requires a lowercase repository path; github.repository_owner may
+  # contain uppercase letters (e.g. a fork owner). Computed in a step below.
+  IMAGE: ghcr.io/fabioleitao/freellmapi
 
 # Each platform builds NATIVELY (ubuntu-24.04-arm is free for public repos) —
 # no QEMU. Emulated arm64 builds took ~20 min cold (better-sqlite3 compiles
@@ -136,9 +138,10 @@ jobs:
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
-          docker buildx imagetools create \
-            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf "${IMAGE}@sha256:%s " *)
+          read -r -a tags <<< "$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")"
+          digests=()
+          for d in *; do digests+=("${IMAGE}@sha256:${d}"); done
+          docker buildx imagetools create "${tags[@]}" "${digests[@]}"
 
       - name: Inspect image
         run: docker buildx imagetools inspect "${IMAGE}:${{ steps.meta.outputs.version }}"

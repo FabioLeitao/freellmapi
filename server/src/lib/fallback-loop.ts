@@ -21,6 +21,8 @@ import type { RouteResult } from '../services/router.js';
 import { recordRateLimitHit, recordModelFailure, recordSuccess, hasOtherUsableKey, routableKeyIdsForModel, formatResetEta, isProviderMomentAttributionEnabled } from '../services/router.js';
 import { safeHeaderValue } from './header-value.js';
 import { logVisionBlocked } from './vision-gate.js';
+import { blockCause } from './block-cause.js';
+import type { BaseBlockCause, BlockCause } from './block-cause.js';
 import {
   recordRequest,
   recordTokens,
@@ -55,6 +57,7 @@ import {
   isContextTooLargeError,
   isTimeoutErrorText,
   isStreamTruncatedError,
+  isMethodNotAllowedError,
   isHostConnectionError,
 } from './error-classify.js';
 import { sanitizeProviderErrorMessage, summarizeAttemptError } from './error-redaction.js';
@@ -575,6 +578,38 @@ export function recordRetryableFailure(route: RouteResult, err: any, state: Fall
   if (isProviderLevelError(err) && route.platform !== 'custom') {
     state.skipPlatforms.add(route.platform);
   }
+  // 405 Method Not Allowed: the relay's gate refused the POST (login page, WAF,
+  // wrong base path) — a fact about that ENTRANCE, not about the model's health
+  // and not about the payload. Rule the entrance out for the rest of the
+  // request without widening the routing API: for a custom endpoint, expand the
+  // relay into the existing per-model skip set (every model row behind that
+  // endpoint would answer the POST the same way, and every relay shares the one
+  // 'custom' platform id, so a platform-wide skip would take the healthy relays
+  // with it); for a catalog platform, the whole provider, since it exposes a
+  // single entrance. A custom row with no endpoint scope cannot name its relay,
+  // so it skips only itself. No cooldown and exempt from the breaker: a 405 is
+  // deterministic about THIS entrance, it says nothing about the model's health
+  // or the rest of the pool — keeping the relay out of the NEXT request is
+  // endpoint-level cooling, a separate follow-up.
+  if (isMethodNotAllowedError(err)) {
+    if (route.endpointScope) {
+      // The row that just failed is always skipped, even when the listing below
+      // comes back empty (row deleted mid-request) or the DB read fails.
+      state.skipModels.add(route.modelDbId);
+      try {
+        const sameRelay = getDb().prepare('SELECT id FROM models WHERE platform = ? AND endpoint_scope = ?')
+          .all(route.platform, route.endpointScope) as { id: number }[];
+        for (const row of sameRelay) state.skipModels.add(row.id);
+      } catch (dbErr: any) {
+        console.warn(`[FallbackLoop] could not list ${route.platform} models for endpoint ${route.endpointScope}: ${dbErr?.message ?? dbErr}`);
+      }
+    } else if (route.platform === 'custom') {
+      state.skipModels.add(route.modelDbId);
+    } else {
+      state.skipPlatforms.add(route.platform);
+    }
+    return true;
+  }
   // An adapter's own "cannot serve this" rejection (#1876: Gizmo asked for
   // tools or images, a catalog id outside an adapter's tested allow-list) is a
   // fact about the request or the model id, not the key's health. Skip the
@@ -809,6 +844,7 @@ export type AttemptErrorClass =
   | 'forbidden'
   | 'context_too_large'
   | 'provider_bad_request'
+  | 'method_not_allowed'
   | 'empty_completion'
   | 'format_ignored'
   | 'invalid_tool_arguments'
@@ -837,6 +873,10 @@ export function classifyAttemptError(err: any): AttemptErrorClass {
   // A DEGRADED-function 400 (NVIDIA NIM, #522) is provider health, not request
   // shape — keep it out of provider_bad_request so the trail reads honestly.
   if (isProviderDegradedError(err)) return 'upstream_error';
+  // Before the bad-request check: a 405 is the upstream's ENTRANCE refusing the
+  // POST (login page / WAF / wrong base path), not a shape rejection of the
+  // payload — the trail must name it as such instead of a bare 'error'.
+  if (isMethodNotAllowedError(err)) return 'method_not_allowed';
   if (isProviderBadRequestError(err)) return 'provider_bad_request';
   const msg = (err?.message ?? '').toLowerCase();
   if (msg.includes('empty completion')) return 'empty_completion';
@@ -986,6 +1026,11 @@ export interface ExhaustionBody {
   // becomes available again (soonest cooldown expiry). Rendered in the error
   // body and as a Retry-After header (seconds, ceil) by setExhaustionHeaders.
   retryAtMs?: number;
+  // Blocking cause, set on 429 exhaustions only (never on the 422
+  // no_vision_model gate). Additive only: existing clients keep reading the
+  // unchanged `code` and `type`.
+  cause?: BlockCause;
+  causeDetail?: BaseBlockCause;
 }
 
 /**
@@ -993,13 +1038,15 @@ export interface ExhaustionBody {
  * OpenAI-shaped surface so the wire shape (message/type/code/retryAtMs) cannot
  * drift between them.
  */
-export function exhaustionErrorPayload(body: ExhaustionBody): { message: string; type: string; code?: string; retryAtMs?: number } {
-  const payload: { message: string; type: string; code?: string; retryAtMs?: number } = {
+export function exhaustionErrorPayload(body: ExhaustionBody): { message: string; type: string; code?: string; retryAtMs?: number; cause?: BlockCause; cause_detail?: BaseBlockCause } {
+  const payload: { message: string; type: string; code?: string; retryAtMs?: number; cause?: BlockCause; cause_detail?: BaseBlockCause } = {
     message: body.message,
     type: body.type,
   };
   if (body.code) payload.code = body.code;
   if (body.retryAtMs != null) payload.retryAtMs = body.retryAtMs;
+  if (body.cause) payload.cause = body.cause;
+  if (body.causeDetail) payload.cause_detail = body.causeDetail;
   return payload;
 }
 
@@ -1014,6 +1061,10 @@ export function setExhaustionHeaders(
   body: ExhaustionBody,
   now = Date.now(),
 ): void {
+  // These must be stamped before the early return: a route with no concrete
+  // retry time still has a distinct blocking cause to report.
+  if (body.cause) res.setHeader('X-Block-Cause', body.cause);
+  if (body.causeDetail) res.setHeader('X-Block-Cause-Detail', body.causeDetail);
   if (body.retryAtMs == null) return;
   res.setHeader('Retry-After', String(Math.max(0, Math.ceil((body.retryAtMs - now) / 1000))));
 }
@@ -1155,6 +1206,25 @@ export function exhaustedRetryError(lastError: any, maxRetries?: number, ctx?: E
       type: 'invalid_request_error',
       code: 'provider_rejected_request',
       message: `All routed providers rejected the request as invalid${budgetNote}.${trail} Last error: ${safeLastError}`,
+    };
+  }
+
+  // Every attempt was refused with 405 Method Not Allowed: the upstream
+  // ENTRANCES refused the POST itself (login page / WAF / wrong base path), so
+  // the request payload was never judged. The terminal status stays the generic
+  // 502 `upstream_failed` — the upstream pool failed us — but the body must not
+  // tell the caller to "retry" a deterministic entrance refusal, nor imply the
+  // request shape was at fault; the trail already names the class.
+  if (everyAttempt('method_not_allowed')) {
+    return {
+      kind: 'upstream',
+      status: 502,
+      type: 'provider_error',
+      code: 'upstream_failed',
+      message: `All ${attempts.length} routed attempt(s) were refused with HTTP 405 (Method Not Allowed) by their ` +
+        `upstream entrance${budgetNote}. The relay's chat endpoint — or a gateway in front of it — does not accept ` +
+        `this POST (a login/WAF page or a wrong base path), not a problem with the request payload. ` +
+        `Switch the relay or check its base URL.${trail} Last error: ${safeLastError}`,
     };
   }
 
@@ -1433,6 +1503,9 @@ export interface ExhaustionInfo {
 }
 
 export interface FallbackHooks {
+  // True when the request carries an image. Drives the vision-specific block
+  // causes; the rule comes from this flag, never from diagnostic text.
+  requireVision?: boolean;
   // Defaults to FALLBACK_MAX_RETRIES.
   maxRetries?: number;
   // Base wall-clock retry budget override, mostly for tests. Defaults to
@@ -1585,6 +1658,24 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
   };
   let lastError: any = null;
 
+  const annotateBlock = (body: ExhaustionBody, diag?: readonly string[]): ExhaustionBody => {
+    const result = blockCause({
+      status: body.status,
+      requireVision: hooks.requireVision === true,
+      diag,
+      attempts,
+    });
+    if (result) {
+      body.cause = result.cause;
+      if (result.detail) body.causeDetail = result.detail;
+    }
+    return body;
+  };
+  const onExhausted = (body: ExhaustionBody, info: ExhaustionInfo): void =>
+    hooks.onExhausted(annotateBlock(body), info);
+  const onRoutingExhausted = (lastErr: any, routeErr: any, body: ExhaustionBody, info: ExhaustionInfo): void =>
+    hooks.onRoutingExhausted(lastErr, routeErr, annotateBlock(body, routeErr?.diagnostics), info);
+
   // Circuit-breaker guardrail (default off): the Nth consecutive upstream
   // failure aborts the chain with a 503 instead of grinding the remaining
   // candidates of a pool that is failing across the board. Auth failures count
@@ -1601,7 +1692,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
       console.log(`[FallbackLoop] breaker tripped after client disconnect — stopping without rendering (${attempts.length} failed attempt(s))`);
       return true;
     }
-    hooks.onExhausted(
+    onExhausted(
       exhaustedRetryError(lastError, maxRetries, { attempts, breakerFails: breaker.consecutive }),
       { attempts, timedOut: false },
     );
@@ -1624,7 +1715,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
       // With no candidate to supply an endpoint-specific allowance, retain
       // the original timeout diagnosis when the base budget is already spent.
       if (attempt > 1 && baseBudgetMs > 0 && Date.now() - startedAt >= baseBudgetMs) {
-        hooks.onExhausted(
+        onExhausted(
           exhaustedRetryError(lastError, maxRetries, { attempts, timedOut: true, budgetMs: baseBudgetMs }),
           { attempts, timedOut: true },
         );
@@ -1654,7 +1745,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
             : undefined,
         });
       }
-      hooks.onRoutingExhausted(lastError, routeErr, exhaustion, { attempts, timedOut: false });
+      onRoutingExhausted(lastError, routeErr, exhaustion, { attempts, timedOut: false });
       return;
     }
 
@@ -1675,7 +1766,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
     // Attempt 0 and the first retry remain exempt (#751). Routing reserves a
     // lease, so even a candidate rejected here must pass through finally.
     if (attempt > 1 && budgetMs > 0 && Date.now() - startedAt >= budgetMs) {
-      hooks.onExhausted(
+      onExhausted(
         exhaustedRetryError(lastError, maxRetries, { attempts, timedOut: true, budgetMs }),
         { attempts, timedOut: true },
       );
@@ -1857,7 +1948,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
           recordRetryableFailure(route, err, hooks.state);
         }
         console.log(`[FallbackLoop] retry time budget expired mid-attempt on ${route.platform}/${route.modelId} after ${(elapsedMs / 1000).toFixed(1)}s — rendering timedOut exhaustion ${ownedWholeBudget ? `and benching the route (silent for the whole ${budgetMs}ms budget)` : 'without benching'}`);
-        hooks.onExhausted(
+        onExhausted(
           exhaustedRetryError(lastError, maxRetries, { attempts, timedOut: true, budgetMs }),
           { attempts, timedOut: true },
         );
@@ -1945,7 +2036,7 @@ async function runFallbackLoopAttempts(hooks: FallbackHooks, trace: RequestTrace
     }
   }
 
-  hooks.onExhausted(
+  onExhausted(
     exhaustedRetryError(lastError, maxRetries, { attempts }),
     { attempts, timedOut: false },
   );

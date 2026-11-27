@@ -9,15 +9,16 @@ import { fileURLToPath } from 'node:url';
 import { applyGeneratedFiles, printDryRunDiff } from './config-files.js';
 import { detectChatGptClient } from './detect.js';
 import { getTool, tools } from './tools.js';
-import { resolveLaunchModel, type ResolvedModel } from './models.js';
+import { parseContextWindow, resolveLaunchModel, type ResolvedModel } from './models.js';
 import { DOCTOR_TOOLS, diagnose, exitCodeFor, formatReport, type ToolReport } from './doctor.js';
 import { keysHelp, runKeys, type KeyCommandOptions } from './keys.js';
-import type { CatalogModel, GenerateContext } from './types.js';
+import type { CatalogModel, ContextWindowChoice, GenerateContext } from './types.js';
 
 interface CliOptions extends KeyCommandOptions {
   apiKey?: string;
   profile: string;
   model?: string;
+  contextWindow?: ContextWindowChoice;
 }
 
 function rootUrl(url: string): string {
@@ -81,7 +82,7 @@ export function parseArgs(argv: string[]): { command?: string; options: CliOptio
     const value = inline ?? argv[index + 1];
     if (
       flag === '--url' || flag === '--api-key' || flag === '--profile'
-      || flag === '--model' || flag === '--timeout'
+      || flag === '--model' || flag === '--timeout' || flag === '--context-window'
       || flag === '--token' || flag === '--key' || flag === '--id'
     ) {
       if (inline === undefined) index += 1;
@@ -92,6 +93,7 @@ export function parseArgs(argv: string[]): { command?: string; options: CliOptio
       else if (flag === '--api-key') options.apiKey = value;
       else if (flag === '--profile') options.profile = validateProfile(value);
       else if (flag === '--timeout') options.timeoutMs = parseTimeout(value);
+      else if (flag === '--context-window') options.contextWindow = parseContextWindow(value);
       else if (flag === '--token') options.token = value;
       else if (flag === '--key') options.key = value;
       else if (flag === '--id') {
@@ -108,11 +110,42 @@ export function parseArgs(argv: string[]): { command?: string; options: CliOptio
   return { command, options };
 }
 
+async function readStdin(): Promise<string> {
+  // A stdin that is not a TTY but never sends anything (an inherited pipe, or
+  // Git Bash/mintty on Windows, where the console is a pipe) would wait here
+  // with no output. Say what is happening once input is late; piped keys
+  // arrive well before this fires.
+  const hint = setTimeout(() => {
+    process.stderr.write(
+      'Waiting for the provider key on stdin (input is not hidden). End it with Ctrl+D (Ctrl+Z, Enter on Windows), '
+      + 'or pass --key / FREELLMAPI_PROVIDER_KEY instead.\n',
+    );
+  }, 1000);
+  hint.unref?.();
+  const chunks: Buffer[] = [];
+  try {
+    for await (const chunk of process.stdin) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+  } finally {
+    clearTimeout(hint);
+  }
+  const text = Buffer.concat(chunks).toString('utf8').trim();
+  // A key is one line. Several lines means something else was piped in (an
+  // .env file, say); refuse rather than store it as the key.
+  if (/[\r\n]/.test(text)) throw new Error('stdin had more than one line; pipe only the provider key');
+  return text;
+}
+
+// A provider key may come from FREELLMAPI_PROVIDER_KEY or piped stdin, so scripts
+// never put it in argv.
 async function promptForKey(provider = false): Promise<string> {
+  if (provider) {
+    const supplied = process.env.FREELLMAPI_PROVIDER_KEY?.trim() || (process.stdin.isTTY ? '' : await readStdin());
+    if (supplied) return supplied;
+  }
   if (!process.stdin.isTTY) {
     throw new Error(
       provider
-        ? 'No provider key supplied. Pass --key or use an interactive terminal for hidden input.'
+        ? 'No provider key supplied. Pass --key, set FREELLMAPI_PROVIDER_KEY, pipe it on stdin, or use an interactive terminal for hidden input.'
         : 'No API key supplied. Pass --api-key or set FREELLMAPI_API_KEY.',
     );
   }
@@ -272,6 +305,7 @@ function help(): string {
     '  doctor [tool…]    Check whether a tool\'s requests actually reach this gateway',
     '                    (--timeout MS raises the probe wait on a slow link)',
     '  launch            Run Claude Code with credentials injected into the child environment',
+    '                    (setup-claude and launch take --context-window max|TOKENS)',
     '  launch-codex      Run Codex CLI with provider overrides and injected credentials',
     '  list              List supported coding agents',
     '  keys              Add, list, remove, or test provider keys (keys --help)',
@@ -298,6 +332,7 @@ async function setup(command: string, options: CliOptions): Promise<void> {
     models: rosters.available,
     homeDir: os.homedir(),
     requestedModelId,
+    contextWindow: options.contextWindow,
     detectedClient: detectChatGptClient(),
   };
   const generation = tool.generate(context);
@@ -362,7 +397,7 @@ export function claudeLaunchEnv(
   homeDir = os.homedir(),
   fullCatalog: CatalogModel[] = models,
 ): NodeJS.ProcessEnv {
-  const resolved = resolveLaunchModel(options.model, models, fullCatalog);
+  const resolved = resolveLaunchModel(options.model, models, fullCatalog, options.contextWindow);
   const selected = resolved.id;
   const env: NodeJS.ProcessEnv = { ...baseEnv };
   // Never leak the user's real Anthropic credentials to the gateway.
@@ -472,6 +507,11 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     const flag = arg.split('=', 1)[0];
     if (command !== 'keys' && ['--token', '--key', '--id'].includes(flag)) {
       throw new Error(`${flag} is only supported by keys`);
+    }
+    // Only Claude Code's window is written from it; anywhere else it would be
+    // a silent no-op.
+    if (flag === '--context-window' && command !== 'setup-claude' && command !== 'launch') {
+      throw new Error('--context-window is only supported by setup-claude and launch');
     }
     if (command === 'keys' && ['--api-key', '--profile', '--model'].includes(flag)) {
       throw new Error(`${flag} is not supported by keys; use keys --help for available options`);
