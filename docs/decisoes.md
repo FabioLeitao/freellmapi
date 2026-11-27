@@ -204,3 +204,20 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   usa os tipos e não muda.
 - **Decidido por:** arquiteto-senior (revisão 1 do desenho da M1.1), a partir das sugestões 1 e 2 da
   revisão do PR #31.
+
+## ADR-011: versão marcada entra pelo build, não por código do painel
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** R17 pede que a versão marcada com os patches chegue ao painel. `getAppVersion()` já prefere
+  `FREEAPI_VERSION` em runtime e `/api/settings/version` já a publica; o que faltava era o build gravar a
+  tag. A premissa antiga de que o wrapper compilava o checkout atual estava errada (vinha de uma versão
+  sobrescrita do script): o wrapper atual usa `git archive "$REFSHA"`. O formato canônico da tag é
+  `up-<sha8>.databoar-<sha8>[.rótulo]`; o `<tag>-<n>-g<sha>` escrito em T0.5 é o formato antigo.
+- **Decisão:** `Dockerfile` ganha `ARG FREEAPI_VERSION` / `ENV FREEAPI_VERSION=${FREEAPI_VERSION}` na
+  camada final; o wrapper (arquivo do operador, fora do repo) passa `--build-arg "FREEAPI_VERSION=$TAG"`.
+  Nenhuma mudança em `app-version.ts`, `/api/settings/version` ou no painel. Builds sem o `--build-arg`
+  continuam mostrando `desktop/package.json`. Toda prova usa `--no-install` e porta efêmera, nunca `:3001`.
+- **Consequências:** a tag do wrapper passa a ser a versão exibida; T0.5 e a issue #11 precisam de revisão
+  do PM quanto ao formato da tag. Nenhum valor é inventado quando a variável está vazia.
+- **Decidido por:** arquiteto-senior (desenho da F0.5); linha do wrapper é do operador.
