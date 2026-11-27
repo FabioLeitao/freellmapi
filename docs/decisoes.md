@@ -244,7 +244,7 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
 - **Status:** aceita
 - **Contexto:** `setFallbackHeaders` só escreve `X-Fallback-Attempts` e `X-Fallback-Trail` quando há
   tentativa falha; o 422 de visão e os 429 em que o roteador barrou antes do envio têm zero tentativas e
-  ficavam sem os dois cabeçalhos. Mudiar a condição global faria os cabeçalhos aparecerem em sucessos.
+  ficavam sem os dois cabeçalhos. Mudar a condição global faria os cabeçalhos aparecerem em sucessos.
 - **Decisão:** helper separado `setZeroFallbackHeaders(res)`, chamado só em erros 422/429 com zero
   tentativas (guardas de visão, saídas do loop e limitador do gateway). Valores: `0` e `''` (cabeçalho
   presente, valor vazio). `setFallbackHeaders` e as respostas de sucesso não mudam.
