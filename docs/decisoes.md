@@ -221,3 +221,19 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
 - **Consequências:** a tag do wrapper passa a ser a versão exibida; T0.5 e a issue #11 precisam de revisão
   do PM quanto ao formato da tag. Nenhum valor é inventado quando a variável está vazia.
 - **Decidido por:** arquiteto-senior (desenho da F0.5); linha do wrapper é do operador.
+
+## ADR-012: gate local único, no host por padrão
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** R25 pede um `scripts/check-all.sh` que espelhe o `ci.yml` sem tocar o `:3001` nem o banco
+  real. O `docker-compose.yml` do upstream publica justamente a 3001, que é o servidor local em uso
+  (ADR-005), e o teste do gate não pode depender de Dockerfile nem de rede.
+- **Decisão:** o script é arquivo só do fork, roda no Node do host com `npm ci` → `test:migrations` →
+  `npm test` → `lint` → `build` → `check:i18n`, com `set -euo pipefail` e falha imediata. O modo
+  `--container` é opcional, usa podman com o repo montado e **nenhuma porta publicada**, e tem guarda
+  contra recursão. Nenhum passo sobe compose, troca imagem nem abre `freeapi.db`. O teste do script mora
+  em `scripts/check-all.test.mjs` e não entra em `npm test` da raiz, para não mexer em `package.json`.
+- **Consequências:** o mesmo comando vale na máquina do operador e no SHA exato de qualquer PR; o PM cola
+  a saída 0 no corpo do PR. Nenhum rigor é baixado para obter verde.
+- **Decidido por:** arquiteto-senior (desenho da F0.10), a pedido do usuário.
