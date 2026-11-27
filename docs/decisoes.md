@@ -284,3 +284,17 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
 - **Consequências:** R2 e R23 fecham para essas superfícies sem quebrar clientes de protocolos
   estranhos; cada requisição tem um id distinto, e o mesmo valor aparece no log e no cabeçalho.
 - **Decidido por:** arquiteto-senior (desenho da M1.5).
+
+## ADR-016: botão de URL do gateway é distinto do de URL do provedor
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** R4 pede "Copiar URL da API" com `<baseUrl>/chat/completions`. O `upstream/main` já traz,
+  da PR #2020, um botão "Copy base URL" em cada linha de provedor que copia `k.apiUrl ?? k.baseUrl`, com
+  as chaves `setup.copyUrl`/`setup.copiedUrl`. São URLs diferentes: a do provedor e a do gateway.
+- **Decisão:** M2.1 acrescenta um botão novo na `UnifiedKeySection` (onde o `baseUrl` do gateway já é
+  exibido), com as chaves `keys.copyApiUrl`/`keys.copiedApiUrl` nos 60 locales. O botão do provedor fica
+  como está, com as chaves e o teste dele. O valor copiado é `baseUrl.replace(/\/+$/,'') + '/chat/completions'`.
+- **Consequências:** duas ações com nomes distintos na interface; nenhum endpoint, limite ou id de modelo
+  novo; `check:i18n` é a prova automática da paridade de locales. Risco baixo.
+- **Decidido por:** arquiteto-senior (desenho da M2.1).
