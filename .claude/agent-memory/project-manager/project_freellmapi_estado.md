@@ -35,3 +35,17 @@ Próximos passos na sessão seguinte:
 3. Fila: 6 testes de aceitação para o QA (F0.5 #11, M1.3 #15, M2.1 #16, F0.10 #26, M1.4 #27, M1.5 #28); desenhos feitos para M1.6 #30, M1.7 #36, F0.7 #13.
 4. Gestão pendente do PM: F0.3 (#10, proteção do main — mexe na config do repo, confirmar com o operador), F0.8 (#14, fechar PR #6), G0.1 (#29, P2 depende da M1.2).
 5. Ambiente: limpeza no fim da rodada; `:3001` intacto (up 3 h, healthy); nenhum build/deploy disparado.
+
+## Rodada 8 (28/nov, retomada após o merge do PR #37)
+
+- **PR #37 mesclado pelo operador** em 2026-11-28T01:16:53Z (sem evento `merge` do PM, porque o merge foi dele). Parada do CI resolvida para a M1.2, mas o CI do GitHub **continua sem disparar novos runs** — os próximos PRs podem bater na mesma trava. Registrar e levar ao operador se persistir.
+- **M1.2 (#4) liberada para o dev externo**: rótulos `pronta-para-dev` + `dev-externo`, evento com nota de passagem completa (arquivos, comandos, ambiente, relacionados, atenção R16, pedidos). Falta o operador lançar o opencode na TUI do herdr para o branch de patch.
+- **F0.7 (#13) fechada**: ADR-017 no `main` (commit `9bd51ad1`), sem código a implementar.
+- Despachados nesta rodada: arquiteto-senior (M3.2 — termos oficiais de Kilo/Modal/xKiro/Z.ai/Moonshot em `docs/providers/`); qa-senior (testes de F0.5, M1.3, M2.1 e F0.10, um PR por tarefa).
+- Clone no `main`, limpo e igual ao `origin/main` após `git pull --ff-only` (merge `79260504`). Um agente por branch reforçado por causa do incidente anterior.
+
+Próximos passos da rodada 8:
+1. Aguardar arquiteto e QA; com os PRs de testes, rodar prechecagem (CI pode não disparar — se for o caso, levar ao operador).
+2. M1.2: aguardar o PR do dev externo (opencode), aberto pelo próprio operador; só então revisor.
+3. Gestão do PM pendente: F0.3 (#10, proteção do main — confirmação do operador), F0.8 (#14, fechar PR #6), G0.1 (#29, P2 depende da M1.2).
+4. Não fechar a rodada antes de medir o custo e publicar o evento.
