@@ -299,6 +299,24 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   novo; `check:i18n` é a prova automática da paridade de locales. Risco baixo.
 - **Decidido por:** arquiteto-senior (desenho da M2.1).
 
+## ADR-017: fluxo único do patch até o upstream
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** `docs/operacao.md` trazia o fluxo como rascunho provisório ("o arquiteto o fixa em F0.7");
+  nenhum ADR em `docs/decisoes.md` fixava o caminho do patch. R19 e R20 exigem uma mudança por PR, branch
+  de `upstream/main`, teste real, gate local e nenhuma escrita no upstream antes da validação e do "vai".
+- **Decisão:** sete etapas: (1) branch de `upstream/main` atualizado, sem arquivos de gerência do fork;
+  (2) uma mudança por PR e as regras do `CONTRIBUTING.md`; (3) gate local no SHA exato (`scripts/check-all.sh`
+  quando existir; até lá os passos equivalentes do `ci.yml`); (4) validação local no fork e no `:3001`,
+  decidida pelo usuário; (5) PR de revisão no fork, contra `main`, **não mesclado**, com CI, revisor, cyber
+  e adversarial; (6) abertura do PR no upstream pelo PM com o mesmo branch, só depois da validação e do
+  "vai" daquele PR; (7) merge do mantenedor, fechamento do PR de revisão e patch recebido na próxima sync.
+  Mudança só do fork vai por PR no fork com `merge-green`. Push só para `origin`; PR nunca draft.
+- **Consequências:** o "vai" é por PR e não é delegável ao token; o gate não pode ser afrouxado; T0.6 a
+  T0.9 são as provas de processo. Nenhum agente escreve no upstream durante a trava.
+- **Decidido por:** arquiteto-senior (desenho da F0.7), a partir do rascunho do usuário em `docs/operacao.md`.
+
 ## ADR-019: cliente nas linhas do roteador vem do classificador existente
 
 - **Data:** 2026-11-27
