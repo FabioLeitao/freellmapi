@@ -74,6 +74,17 @@ Não funcionais
 
 Áreas: `backend`, `ux`, `qa`, `gestão`. Tarefa mista tem `backend` e `ux` numa issue só.
 
+### Índice de despacho (contorno)
+
+As tabelas abaixo são a fonte das tarefas. Este índice repete as tarefas de gestão em formato de lista porque o script `fila.py` instalado lê só linhas `- ID …` e não lê tabelas markdown; sem ele, as tarefas de gestão aparecem "sem dono". Não alterar o script do framework.
+
+- F0.3 — gestão (project-manager)
+- F0.6 — gestão (project-manager)
+- F0.7 — gestão (arquiteto-senior)
+- F0.8 — gestão (project-manager)
+- M3.2 — gestão (arquiteto-senior)
+- G0.1 — gestão (project-manager)
+
 ### F0, Fundação
 
 | ID | Tarefa | Área | Atende | Depende de |
