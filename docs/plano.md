@@ -164,7 +164,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | #3 | **M1.1** (issue adotada em 2026-11-23; a #2 era duplicata dela); os cabeçalhos HTTP ficam na M1.3 (#15) |
 | #4 | M1.2 |
 | #5 | **M2.2**, reaberta em 2026-11-23 (estava fechada como "completed" por engano: o commit do Grok/xAI nunca chegou ao `main`); adiada até a P2 |
-| PR #6 | não segue como está; é substituída por F0.8 (fechar com o motivo quando as mudanças únicas tiverem PR) |
+| PR #6 | **Fechada em 2026-11-28** com comentário apontando as substitutas (F0.8); branches do épico aposentados, não apagados. |
 | #30 | **M1.6** (renomeada em 2026-11-27; cliente no log do roteador) |
 | #36 | **M1.7** (criada em 2026-11-27; 429 de `/v1/search` e `/v1/rerank`) |
 | #32, #33 | M1.1b e M1.1 — fechadas em 2026-11-27 como entregues via upstream #2118 |

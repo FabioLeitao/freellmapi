@@ -49,3 +49,5 @@ Próximos passos da rodada 8:
 2. M1.2: aguardar o PR do dev externo (opencode), aberto pelo próprio operador; só então revisor.
 3. Gestão do PM pendente: F0.3 (#10, proteção do main — confirmação do operador), F0.8 (#14, fechar PR #6), G0.1 (#29, P2 depende da M1.2).
 4. Não fechar a rodada antes de medir o custo e publicar o evento.
+
+**Atualização 28/nov (parada revogada pelo operador):** F0.8 executada — PR #6 fechada com comentário apontando o destino de cada item (M2.1 #16, M1.1 #3/#2118, M1.2 #4/#37, M1.3 #15, M2.2 #5/P2, M4.1 #23, M4.2 #24, F0.1); branches `feature/epic-fixes`, `-2`, `-final` e `all-fixes-epic` aposentados, não apagados. Evento `coordenacao` na #14. Issue #14 segue aberta porque as substitutas M1.2 e M2.1 ainda não têm PR de código mesclado. Termos oficiais (M3.2) comitados como controle exclusivo do fork em `7a31065d`.
