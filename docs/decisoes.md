@@ -298,3 +298,20 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
 - **Consequências:** duas ações com nomes distintos na interface; nenhum endpoint, limite ou id de modelo
   novo; `check:i18n` é a prova automática da paridade de locales. Risco baixo.
 - **Decidido por:** arquiteto-senior (desenho da M2.1).
+
+## ADR-019: cliente nas linhas do roteador vem do classificador existente
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** a issue #30 pede `client=` nas linhas `start/ok/fail` do roteador. Essas linhas vêm de
+  `traceRouteEvent` (`routes/proxy.ts`), que nunca teve campo de cliente no histórico canônico
+  (`git log --all -S'client_agent='` e `-S'client='` nos dois arquivos não retornam commits). O que existe
+  é `requests.client_agent`, gravado por `logRequest()` via `getClientContext()`.
+- **Decisão:** `traceRouteEvent` acrescenta um token `client=<ClientAgent>`, opcionalmente informado por
+  `opts.clientAgent` e senão lido de `getClientContext().agent`; sem contexto ou com
+  `REQUEST_ANALYTICS_LOG_CLIENT=false`, `client=unknown`. Nenhum User-Agent cru, IP ou e-mail é logado.
+  A causa do sumiço e o modo de leitura ficam em `docs/fork/README.md`, arquivo só do fork.
+- **Consequências:** um `grep 'client=opencode'` nos logs separa os harnesses; nenhum chamador muda e
+  nenhuma coluna nova aparece. Builds locais fora do histórico canônico podem ter tido patch próprio, o
+  que o README registra como limite da evidência.
+- **Decidido por:** arquiteto-senior (desenho da M1.6).
