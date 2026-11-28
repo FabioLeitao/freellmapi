@@ -315,3 +315,17 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   nenhuma coluna nova aparece. Builds locais fora do histórico canônico podem ter tido patch próprio, o
   que o README registra como limite da evidência.
 - **Decidido por:** arquiteto-senior (desenho da M1.6).
+
+## ADR-020: causa distinta em `/v1/search` e `/v1/rerank`
+
+- **Data:** 2026-11-27
+- **Status:** aceita
+- **Contexto:** a M1.4 (ADR-014) cobriu embeddings, mídia e fusion, mas deixou fora os 429 de
+  `/v1/search` e `/v1/rerank`, que usam serviços e classes de erro próprios. R23 cobre todo 429.
+- **Decisão:** `SearchError` e `RerankError` ganham `blockCause?: BaseBlockCause` escrito no `throw`;
+  as rotas aplicam o `annotateBlock` exportado da M1.4, acrescentam `error.cause`, `X-Block-Cause`,
+  `execution_id` e um evento `route_blocked` por resposta 429. `code`, `message`, status e
+  `Retry-After` não mudam, e nenhuma mensagem de provedor é interpretada.
+- **Consequências:** dependência explícita de M1.2 e M1.4; se M1.4 não estiver na base, o dev para e avisa
+  o PM em vez de duplicar o helper. O caso 402 de Brave fica fora.
+- **Decidido por:** arquiteto-senior (desenho da M1.7).
