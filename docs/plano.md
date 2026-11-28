@@ -80,12 +80,12 @@ Não funcionais
 |---|---|---|---|---|
 | F0.1 | Corrigir o "Check migration round trip" vermelho no `main`. **Causa confirmada em 2026-11-23** (5 testes vermelhos em 5.713, todos da migração `20261122_000001_nvidia_3.5_embedding_catalogue` de `c1c07bb`): (1) ponto no nome do arquivo (`3.5`), e o teste de backup exige `[a-z0-9_]+`; (2) registro em `defaults.ts` fora da ordem dos nomes, antes da `20261111_000002_profile_routing_strategy`; (3) `up()` passa ao `node:sqlite` um parâmetro que ele rejeita (`Unknown named parameter '0'`); (4) up, down, up muda os ids de `embedding_models` (13 e 14 viram 15 e 16): é migração de dados que a down não desfaz (sintoma; a ordem do registro pode contribuir). Corrigir é refazer a migração (ou reverter o `c1c07bb`); o arquiteto decide no desenho. | backend | R12, R13 | — |
 | F0.2 | Base da arquitetura do monorepo existente (`shared`, `server`, `client`, `cli`, `desktop`): stack, migrações, i18n, hash CSP, como um `Platform` vira adaptador. Skill `base-arquitetura`. | gestão (arquiteto) | R14 | — |
-| F0.3 | Proteger o `main` (checks obrigatórios, sem force-push). | gestão | R12 | F0.1 |
+| F0.3 | Proteger o `main` (checks obrigatórios, sem force-push). | gestão (project-manager) | R12 | F0.1 |
 | ~~F0.4~~ | ~~Regularizar a PR #6 pelo fluxo.~~ **Riscada em 2026-11-23:** a PR #6 não segue como está (mistura três mudanças, 60 arquivos de locale, sem teste; o upstream exige uma mudança por PR). Substituída por F0.8. | ~~gestão~~ | ~~R12, R14~~ | — |
 | F0.5 | Fixar como construir a imagem de dogfooding com os nossos patches: o `freellmapi-databoar-build` (original restaurado pelo Owl; ver `--help`) faz `podman build` com `FREELLMAPI_COMMIT_SHA`, tag `up-<upstream sha8>.databoar-<ref sha8>[.rótulos]`, e **para (saída 4)** se um caminho difere do `upstream/main` sem rótulo. O `main` do fork tem `docs/`, `.claude/` e commits sem rótulo, então o ref de build é um **branch de integração limpo** (`upstream/main` + patches rotulados, sem arquivos de gerência), com um rótulo por patch em `patch-labels.tsv`. O arquiteto decide o desenho e confere o que o painel mostra de versão (`FREEAPI_VERSION`, `desktop/package.json`, `FREELLMAPI_COMMIT_SHA`). *(Revisada em 2026-11-23: a premissa anterior vinha de uma versão sobrescrita do wrapper.)* | backend | R17 | F0.2 |
-| F0.6 | Sincronizar o `main` do fork com o upstream (merge, sem rebase), antes de cortar qualquer branch e de diagnosticar F0.1. | gestão | R20 | — |
-| F0.7 | Fixar o fluxo de um patch até o upstream (branch de `upstream/main`, gate local, PR de revisão no fork que não é mesclado, abertura no upstream) como decisão do projeto (ADR), a partir do rascunho de `docs/operacao.md`. | gestão (arquiteto) | R19, R20 | F0.2, F0.6 |
-| F0.8 | Substituir a PR #6: refazer os seus itens como branches de `upstream/main`, um por mudança (são as tarefas M1.2, M2.1 e M2.2), e fechar a #6 com um comentário que aponte a substituta e aposentar, sem apagar, os branches `feature/epic-fixes`, `-2`, `-final` e `all-fixes-epic`. No upstream, as issues #2061 a #2063 e a PR #2074 só recebem comentário ou fechamento com o "vai" do usuário. | gestão | R14, R20 | F0.7, M1.2, M2.1 |
+| F0.6 | Sincronizar o `main` do fork com o upstream (merge, sem rebase), antes de cortar qualquer branch e de diagnosticar F0.1. | gestão (project-manager) | R20 | — |
+| F0.7 | Fixar o fluxo de um patch até o upstream (branch de `upstream/main`, gate local, PR de revisão no fork que não é mesclado, abertura no upstream) como decisão do projeto (ADR), a partir do rascunho de `docs/operacao.md`. | gestão (arquiteto-senior) | R19, R20 | F0.2, F0.6 |
+| F0.8 | Substituir a PR #6: refazer os seus itens como branches de `upstream/main`, um por mudança (são as tarefas M1.2, M2.1 e M2.2), e fechar a #6 com um comentário que aponte a substituta e aposentar, sem apagar, os branches `feature/epic-fixes`, `-2`, `-final` e `all-fixes-epic`. No upstream, as issues #2061 a #2063 e a PR #2074 só recebem comentário ou fechamento com o "vai" do usuário. | gestão (project-manager) | R14, R20 | F0.7, M1.2, M2.1 |
 | F0.9 | Poupar CI e publicação de imagem do fork: `paths-ignore` para `docs/**`, PDFs e `.claude/agent-memory/**` no `push` de `ci.yml` e `docker.yml` (só no fork). O desenho avalia também se o `docker.yml` deve publicar imagem a partir do fork a cada push no `main`, sem baixar o rigor do CI para código. *(pedida pelo arquiteto-senior na F0.2; decidida pelo usuário em 2026-11-23)* | backend | R12, R24 | F0.2 |
 | F0.10 | Gate local `scripts/check-all.sh` só do fork: espelha o `ci.yml` (`npm ci`, round trip das migrações, `npm test`, lint, build e `check:i18n`), sai com 0 só com tudo verde, usa o Node do host (modo opcional em contêiner com podman) e nunca toca o `:3001` nem o banco real. *(pedida pelo arquiteto-senior na F0.2; decidida pelo usuário em 2026-11-23)* | backend | R12, R14, R25 | F0.2 |
 
@@ -98,6 +98,8 @@ Não funcionais
 | M1.3 | Levar `X-Fallback-Attempts` e `X-Fallback-Trail` ao 422 (no 429 já existem, por `setFallbackHeaders`; no 422 são zero tentativas). Encolheu depois do desenho do arquiteto (2026-11-23). | backend | R2 | M1.1 |
 | M1.4 | Estender a causa distinta (R23) aos 429 de embeddings, mídia e fusion, reaproveitando a taxonomia e o `annotateBlock` da M1.1. *(pedida pelo arquiteto-senior no desenho da M1.1, 2026-11-23)* | backend | R23 | M1.1 |
 | M1.5 | Levar o `execution_id` ao `inbound-chat` (entradas Gemini e Ollama), movendo `getRequestGroupId` para `lib/`. *(pedida pelo arquiteto-senior no desenho da M1.2, 2026-11-23)* | backend | R2, R23 | M1.2 |
+| M1.6 | Registrar o cliente (`client_agent`) em toda linha `start/ok/fail` do roteador, derivado do User-Agent, sem dado sensível; descobrir a causa do desaparecimento e documentar no README do fork. *(issue #30, renomeada em 2026-11-27)* | backend | R2, R23, R16 | F0.1 |
+| M1.7 | Levar a causa distinta (R23) aos 429 de `/v1/search` e `/v1/rerank`, fora do desenho M1.4/ADR-014, com log estruturado e teste de cada caminho. *(issue #36, criada em 2026-11-27)* | backend | R23 | M1.2, M1.4 |
 
 Corte em PRs únicas: o arquiteto decide no desenho. Candidata natural: o `a70c4e81` mais o 422 `no_vision_model` também no caminho do histórico; o log e os cabeçalhos entram na mesma PR só se forem a mesma mudança.
 
@@ -116,7 +118,7 @@ M2.1 e M2.2 são PRs separadas. M2.2 só vai ao upstream com limites e endpoints
 | ID | Tarefa | Área | Atende | Depende de |
 |---|---|---|---|---|
 | M3.1 | Documentar os critérios de admissão (os 6 da issue #1) como decisão do projeto (ADR). | gestão (arquiteto) | R8 | F0.2, **P5** |
-| M3.2 | Ler os termos oficiais de Kilo, Modal, xKiro, Z.ai e Moonshot e registrar em `docs/providers`, com link, data e os três pontos (retenção, treino, agregação). | gestão (arquiteto) | R7 | — |
+| M3.2 | Ler os termos oficiais de Kilo, Modal, xKiro, Z.ai e Moonshot e registrar em `docs/providers`, com link, data e os três pontos (retenção, treino, agregação). | gestão (arquiteto-senior) | R7 | — |
 | M3.3 | Preencher `served_model` com o modelo que o provedor informa; começar por descobrir por que a coluna está vazia apesar do `observeServedModel`. | backend | R9 | F0.1, **P6** |
 | M3.4 | Medição comparativa por tarefa (modelos dominantes contra GLM Flash, Kimi e os do xKiro), reprodutível e sem chaves no relatório. | backend | R10, R16 | M3.2, M3.3, **P5**, **P7** |
 | M3.5 | Adaptador Kilo, desligado por padrão, com teste de contrato. Só se o Kilo passar nos critérios. | backend | R11, R8 | M3.1, M3.2, **P5** |
@@ -128,9 +130,15 @@ M2.1 e M2.2 são PRs separadas. M2.2 só vai ao upstream com limites e endpoints
 | M4.1 | Reasoning models: extrair de `c1c07bb` (`openai-compat.ts`) como PR única ao upstream, com teste que falha sem o ajuste. | backend | R21, R19, R20 | F0.6, F0.7 |
 | M4.2 | Embeddings NVIDIA 3.5: **deixou de ser migração** (ADR-006: a F0.1 tira a migração local; ADR-003: dado de modelo vai pelo catálogo assinado). O desenho decide o caminho: ver se o catálogo do upstream já traz os modelos e, se não, propor ao mantenedor, sem migração. | backend | R22, R19, R20 | F0.1, F0.6, F0.7 |
 
+### G0, Gestão do fluxo
+
+| ID | Tarefa | Área | Atende | Depende de |
+|---|---|---|---|---|
+| G0.1 | Devolver os patches RCA-429 ao upstream, um por vez: P1 (#3/#2061, entregue via #2118) → P2 (#4/#2062). Cada abertura no upstream exige validação local, no fork e no `:3001`, mais o "vai" do operador. *(issue #29, renomeada em 2026-11-27)* | gestão (project-manager) | R20 | M1.2 |
+
 ### Versões
 
-O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrapper (`<tag do upstream>-<commits>-g<sha>`).
+O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrapper, `up-<sha8 do upstream>.databoar-<sha8 do ref>[.rótulo]` (T0.5, corrigido em 2026-11-27; o formato antigo `<tag>-<n>-g<sha>` estava errado).
 
 - **Marco A, patches prontos para o upstream:** F0 + M1 + M2.1 + M4 (+ M2.2 se P2 aprovar). Build com o wrapper depois de F0.5.
 - **Marco B, provedores avaliados:** M3.
@@ -146,8 +154,13 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | #4 | M1.2 |
 | #5 | **M2.2**, reaberta em 2026-11-23 (estava fechada como "completed" por engano: o commit do Grok/xAI nunca chegou ao `main`); adiada até a P2 |
 | PR #6 | não segue como está; é substituída por F0.8 (fechar com o motivo quando as mudanças únicas tiverem PR) |
+| #30 | **M1.6** (renomeada em 2026-11-27; cliente no log do roteador) |
+| #36 | **M1.7** (criada em 2026-11-27; 429 de `/v1/search` e `/v1/rerank`) |
+| #32, #33 | M1.1b e M1.1 — fechadas em 2026-11-27 como entregues via upstream #2118 |
+| PR #34 | PR de revisão no fork — fechado sem merge em 2026-11-27 (patch já no upstream) |
+| PR #37 | PR de testes de aceitação da M1.2 (QA), aberto em 2026-11-27 |
 
-**Tarefa → issue (publicadas em 2026-11-23; última sincronização 2026-11-23):** F0.1 #8, F0.2 #9, F0.3 #10, F0.5 #11, F0.6 #12, F0.7 #13, F0.8 #14, M1.1 #3, M1.2 #4, M1.3 #15, M2.1 #16, M2.2 #5, M2.3 #17, M3.1 #18, M3.2 #19, M3.3 #20, M3.4 #21, M3.5 #22, M4.1 #23, M4.2 #24, F0.9 #25, F0.10 #26, M1.4 #27, M1.5 #28. F0.4 foi riscada e nunca teve issue (o ID não volta). A #7 é a issue de registro; a #1 é o guarda-chuva de M3.
+**Tarefa → issue (publicadas em 2026-11-23; última sincronização 2026-11-27):** F0.1 #8, F0.2 #9, F0.3 #10, F0.5 #11, F0.6 #12, F0.7 #13, F0.8 #14, M1.1 #3, M1.2 #4, M1.3 #15, M2.1 #16, M2.2 #5, M2.3 #17, M3.1 #18, M3.2 #19, M3.3 #20, M3.4 #21, M3.5 #22, M4.1 #23, M4.2 #24, F0.9 #25, F0.10 #26, M1.4 #27, M1.5 #28, M1.6 #30, M1.7 #36, G0.1 #29. F0.4 foi riscada e nunca teve issue (o ID não volta). A #7 é a issue de registro; a #1 é o guarda-chuva de M3.
 
 ## Testes (para o QA)
 
@@ -157,7 +170,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | T0.2 | CI do `main` depois de F0.1. | Todos os jobs verdes. | R12 |
 | T0.3 | Com a proteção aplicada, tentar force-push e apagar o `main`; fazer push direto de documentação. | Os dois primeiros recusados; o terceiro aceito. | R12 |
 | ~~T0.4~~ | ~~Descrição da PR #6 contra o diff.~~ Riscado com F0.4 (2026-11-23). | ~~Nenhuma afirmação sem prova.~~ | ~~R14~~ |
-| T0.5 | `freellmapi-databoar-build --print-version --ref <ref>` e subir o servidor com o build. | Versão `<tag>-<n>-g<sha>` do ref pedido, igual à exibida no painel. | R17 |
+| T0.5 | `freellmapi-databoar-build --print-version --ref <ref>` e subir o servidor com o build. | Versão `up-<sha8>.databoar-<sha8>[.rótulo]` do ref pedido, igual à exibida no painel via `GET /api/settings/version`. *(corrigido em 2026-11-27 pelo arquiteto)* | R17 |
 | T0.6 | Depois de F0.6: `git merge-base --is-ancestor upstream/main origin/main`. | Saída 0: o fork contém o `upstream/main`. | R20 |
 | T0.7 | `git diff --stat upstream/main...<branch de patch>`. | Só os arquivos da mudança; nenhum de `docs/`, `.claude/` nem PDF. | R20 |
 | T0.8 | No SHA exato do branch de patch: `npm test`, `npm run build` e `npm run check:i18n` (em `client/`). | Todos verdes; o teste novo falha sem a mudança e passa com ela. | R14, R19 |
@@ -166,7 +179,7 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 | T0.11 | Rodar `scripts/check-all.sh` no SHA candidato com o `:3001` no ar; depois quebrar um teste de propósito e rodar de novo. | Saída 0 com tudo verde e diferente de 0 com o teste quebrado; o `:3001` e o `freeapi.db` real não mudam. | R25, R12 |
 | T1.1 | Imagem no histórico, nenhum modelo de visão habilitado. | 422 `code: no_vision_model`, `X-Vision-Model-Available: false`, `X-Fallback-Attempts`, `X-Fallback-Trail`, todos como cabeçalhos HTTP de verdade (hoje os dois do `a70c4e8` são chaves do corpo JSON). | R1, R2 |
 | T1.2 | Histórico reinjetado por handoff (só texto) e `ask` do MCP (só prompt em string): provocar o bloqueio por cooldown. | Nenhum 429 sem `cause`; a premissa de que nenhum dos dois leva imagem foi verificada pelo arquiteto (2026-11-23). | R1, R3 |
-| T1.3 | Caso E do desenho: imagem com visão habilitada, mas sem chave para nenhum modelo de visão. | 429 com `cause: no_vision_key` e `X-Block-Cause` *(depende de P9)*. | R3, R23 |
+| T1.3 | Caso E do desenho: imagem com visão habilitada, mas sem chave para nenhum modelo de visão. | **Revisado em 2026-11-27:** a M1.1 entregue (upstream #2118) removeu `no_vision_key` como código morto e responde 422 `no_vision_model`; o teste lê a causa observável da resposta e verifica a propagação no log. P9 fica sem efeito prático. | R3, R23 |
 | T1.4 | Modelo de visão habilitado, mas em cooldown ou sem cota. | 429, com cabeçalhos que dizem cota ou cooldown, distinguível do caso T1.1. | R2 |
 | T1.5 | Modelo de visão habilitado e disponível. | 200, sem log de bloqueio. | R1 |
 | T1.6 | Ler o log de cada bloqueio. | Um evento com `execution_id`, tipo e motivo; sem texto de mensagem, sem imagem, sem chave. | R2, R16 |
@@ -224,3 +237,6 @@ O fork não usa as versões `v0.x` do framework: a marca de versão é a do wrap
 - **Desenhos entregues (2026-11-23):** F0.1, M1.1 e M1.2 em `docs/desenho/`, e ADR-006 a ADR-008. Diagnóstico do 429 confirmado rodando: com os modelos de visão em cooldown, o roteador devolve 429 `routing_exhausted` sem causa (caso B), e com visão habilitada sem chave o resultado é o mesmo (caso E). **Ordem decidida:** F0.1 (opencode) → F0.6 (sync por PR, `merge-green`) → testes do QA e dev de M1.1 e M1.2, com base `upstream/main`. O pedido (2) do arquiteto, testes sem rede, volta com evidência (no teste descartável dele, uma chave `groq` sem cooldown fez uma chamada real ao provedor); segue sem decisão do usuário.
 - **Wrapper de build (Owl, 2026-11-23):** o script original foi restaurado (111 linhas); o de 69 linhas era uma sobrescrita do goose em 22/nov. `--ref <branch> --no-install` constrói sem tocar o `:3001`. A etiqueta da imagem em uso (`up-8fcdb90e.databoar-01474fe1.zeroclassifier`) segue exatamente esse formato. O `01474fe1` foi um merge feito no clone em 22/nov às 02:34, depois substituído pelo "Sync fork" do GitHub; só existe pelo reflog.
 - **Desenho da F0.9 (arquiteto, 2026-11-23, `docs/desenho/F0.9.md`, ADR-009):** 2 arquivos de workflow (`ci.yml` +2, `docker.yml` +12/−3). Conserto: o nome da imagem passa a usar o dono em minúsculas (`${GITHUB_REPOSITORY_OWNER,,}`). Publicação, padrão reversível e **pendente da decisão do usuário**: o fork só constrói nos PRs e não publica; para publicar, basta acrescentar o repositório do fork nas duas linhas `if:`. Com o `paths-ignore`, o `[skip ci]` deixa de ser necessário em commit só de documentação e **nunca** deve ser usado em commit de código. **F0.3:** a proteção do `main` precisa exigir os checks de PR (`Test & build …` e `Build (…)`) e permitir o push direto de documentação do PM. Só o conserto da minúscula serve a qualquer fork; é candidato ao upstream depois da trava.
+- **Desenhos entregues em 2026-11-27 (arquiteto, `origin/main` `14651343`..`a2c5d2be`, ADRs 011–016):** F0.5, F0.10, M1.3, M1.4, M1.5 e M2.1. Risco: só M2.1 é `baixo`; os outros são `padrão`. Base dos patches M1.x: **`upstream/main` atual**, que já absorveu a #2118 com taxonomia menor que a da M1.1 original — cada desenho diz qual contrato usar. M1.5 depende de M1.2 para a parte do log; sem ela, só o cabeçalho fecha. M2.1 coexiste com o "Copy base URL" do upstream (#2020) e cobre 60 locales.
+- **Divergência AM1.2-2 (27/nov):** o desenho M1.1/M1.2 pede `no_vision_key` (429), mas a M1.1 entregue removeu essa causa. O QA escreveu o teste lendo a causa observável da resposta; a divergência foi devolvida ao arquiteto para revisão do desenho, sem adivinhar o valor literal (T1.3 acima já reflete o estado entregue).
+- **Incidente no clone compartilhado (27/nov):** outro agente trocou o branch no meio do desenho e o commit F0.5 caiu em `testes/M1.2-route-block-log`; o arquiteto restaurou o ponteiro e nenhum arquivo foi alterado. Regra reforçada: um agente por branch, nunca trocar o branch do clone com outro agente rodando.
