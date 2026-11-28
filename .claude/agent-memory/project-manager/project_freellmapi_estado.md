@@ -26,3 +26,12 @@ metadata:
 - Issue #30 renomeada `[M1.6]` (cliente no log); issue #36 criada `[M1.7]` (causa distinta nos 429 de `/v1/search` e `/v1/rerank`, fora do desenho M1.4/ADR-014).
 - Incidente no clone compartilhado: outro agente trocou o branch no meio do desenho e o commit F0.5 caiu em `testes/M1.2-route-block-log`; o arquiteto restaurou o ponteiro, nenhum arquivo alterado. Regra reforçada: um agente por branch, nunca trocar o branch do clone com outro agente rodando.
 - Decisões a aplicar no plano: corrigir T0.5 para `up-<sha8>.databoar-<sha8>[.rótulo]`; base dos patches M1.x = `upstream/main` atual (taxonomia menor da #2118); M1.5 depende de M1.2; divergência AM1.2-2 (`no_vision_key` removido pela M1.1) vai ao arquiteto.
+
+**Fim da rodada 7 (parada obrigatória):** CI do GitHub não dispara no PR #37 (testes da M1.2). Evento `opened` existe desde 00:32Z, workflows `active`, PRs antigos rodaram, e um commit vazio (`2a418b9d`) não gerou runner. Prechecagem só reclama disso. Decisão do operador: verificar o Actions no repo/fork ou autorizar o CI local como evidência. Não chamar revisor antes da prechecagem passar.
+
+Próximos passos na sessão seguinte:
+1. PR #37 — conferir se o CI do GitHub apareceu; se não, levar a decisão ao operador (CI local como evidência ou conserto do Actions).
+2. Com o CI verde: prechecagem → revisor (texto fixo, sem modelo) → merge `--merge` → evento `merge` na #4.
+3. Fila: 6 testes de aceitação para o QA (F0.5 #11, M1.3 #15, M2.1 #16, F0.10 #26, M1.4 #27, M1.5 #28); desenhos feitos para M1.6 #30, M1.7 #36, F0.7 #13.
+4. Gestão pendente do PM: F0.3 (#10, proteção do main — mexe na config do repo, confirmar com o operador), F0.8 (#14, fechar PR #6), G0.1 (#29, P2 depende da M1.2).
+5. Ambiente: limpeza no fim da rodada; `:3001` intacto (up 3 h, healthy); nenhum build/deploy disparado.

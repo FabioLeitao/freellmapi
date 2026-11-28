@@ -12,6 +12,7 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 | 4 | 2026-11-23T23:53 | 1,03 | nenhum |
 | 5 | 2026-11-23T23:59 | 0,39 | nenhum |
 | 6 | 2026-11-24T00:03 | 38,99 | nenhum |
+| 7 | 2026-11-28T00:00 | 0,00 *(sem dados no harness opencode)* | nenhum |
 | **Acumulado** | | **46,62** | |
 
 ## Rodada 1, desde 2026-11-23T22:47
@@ -61,3 +62,11 @@ Histórico de custo do time por rodada, para a auditoria interna. Os valores vê
 - **Por tarefa:** coordenação 26,59 · F0.2 12,38 (o custo do arquiteto está atribuído à F0.2, mas cobre também os desenhos de F0.1, M1.1, M1.2 e F0.9).
 - **Entregas:** aprovação do plano e publicação das tarefas (#8 a #28); desenhos de F0.1, M1.1, M1.2 e F0.9; F0.1 feita pelo opencode e com gate verde; M1.1 feita pelo opencode (QA como subagente dele); trava do upstream em camadas; restauração do `:3001`; regra de disco (nunca worktree nem cópia do repositório); descoberta e registro da causa do `docker.yml` vermelho no fork.
 - **O que chamou a atenção:** esta rodada custou mais de quatro vezes a soma das anteriores. O PM gastou boa parte em incidentes que ele mesmo provocou ou agravou (abrir o opencode que se atualizou e quebrou o serviço, um `restart` que falhou, worktree e cópias no `/tmp` e no `~/.cache`, uma limpeza tentada antes de conferir). Ficam registradas como lição.
+
+## Rodada 7, desde 2026-11-28T00:00
+
+- **Total:** US$ 0,00 *(o script não recebeu dados de uso neste harness; valor a ler como proporção, não como gasto real)*.
+- **Por agente:** sem dados.
+- **Por tarefa:** sem dados.
+- **Entregas:** PR #34 (M1.1) fechado sem merge com o patch já no upstream #2118; issues #32, #33 e #12 (F0.6) fechadas; desenhos F0.5, F0.10, M1.3, M1.4, M1.5, M2.1, M1.6, M1.7, F0.7 e revisão da M1.2 (ADRs 011–020); PR #37 de testes da M1.2; issue #36 criada e #29/#30 renomeadas; plano e memória atualizados no `main` com donos de gestão, M1.6/M1.7/G0.1, T0.5 e T1.3 corrigidos e índice de despacho para a fila.
+- **O que chamou a atenção:** parada obrigatória por CI do GitHub que não dispara no PR #37 (evento `opened` existe, workflows `active`, commit vazio `2a418b9d` não provocou runner); o `fila.py` instalado não lê tabelas markdown, o que exigiu contorno no plano; incidente de concorrência no clone compartilhado (branch trocado no meio do desenho, ponteiro restaurado, nenhum arquivo alterado).
