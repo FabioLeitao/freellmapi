@@ -317,6 +317,25 @@ Status: `aceita`, `proposta`, `substituída por ADR-NNN`.
   T0.9 são as provas de processo. Nenhum agente escreve no upstream durante a trava.
 - **Decidido por:** arquiteto-senior (desenho da F0.7), a partir do rascunho do usuário em `docs/operacao.md`.
 
+## ADR-018: causa do log é `cause ?? code`, sem `no_vision_key`
+
+- **Data:** 2026-11-27
+- **Status:** aceita (revisa o contrato da M1.2, sem mudar status nem respostas)
+- **Contexto:** o QA (PR #37) confirmou a divergência sinalizada no desenho: a M1.1 entregue no `main`
+  (upstream #2118) removeu `no_vision_key` como código morto e responde 422 `no_vision_model` sem
+  `error.cause` nem `X-Block-Cause`. O desenho M1.2 pedia 429 com `no_vision_key`, e sua regra de log
+  (`cause=none` quando não havia `cause`) não conseguiria explicar o 422 nem o 502 com `code`.
+- **Decisão:** `logRouteBlock` recebe `cause?: string` e usa `cause ?? code ?? 'none'` como causa do log.
+  O loop passa `body.cause ?? body.code`; o guarda 422 passa `no_vision_model`; o limitador passa
+  `gateway_rate_limit`. Nenhum desses caminhos ganha `error.cause` na resposta por causa da regra de log;
+  apenas o limitador já acrescenta `error.cause`/`X-Block-Cause`. `no_vision_key` não volta.
+- **Consequências:** o teste de aceitação do QA (PR #37) já lê a causa por
+  `error.cause ?? error.code ?? X-Block-Cause` e continua válido: a revisão o destrava sem editá-lo.
+  DM1.2-4, 6, 7 passam a esperar `cause=<code>` no 502/422; DM1.2-12 protege a ausência de
+  `no_vision_key`.
+- **Decidido por:** arquiteto-senior (revisão 1 do desenho da M1.2), a partir da divergência relatada no
+  PR #37.
+
 ## ADR-019: cliente nas linhas do roteador vem do classificador existente
 
 - **Data:** 2026-11-27
